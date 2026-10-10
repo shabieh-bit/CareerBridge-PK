@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Create your CareerBridge PK student profile for opportunity matching.">
+    <title>Student Profile | CareerBridge PK</title>
+    <link rel="icon" href="careerbridge-logo.png" type="image/png">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="container nav">
+            <a class="brand" href="index.html" aria-label="CareerBridge PK home">
+                <img src="careerbridge-logo.png" alt="CareerBridge PK logo">
+            </a>
+
+            <button class="menu-toggle" aria-label="Toggle navigation" aria-expanded="false">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+
+            <nav class="nav-links" aria-label="Main navigation">
+                <a href="index.html">Home</a>
+                <a href="opportunities.html">Opportunities</a>
+                <a href="about.html">How it works</a>
+                <a href="student-profile.html" aria-current="page">Student Profile</a>
+                <a class="btn btn-small" href="eligibility-check.html">Check eligibility</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="page-hero">
+            <div class="container page-hero-inner">
+                <span class="eyebrow">Student profile</span>
+                <h1>Tell us about yourself.</h1>
+                <p>Your profile powers every eligibility match and helps CareerBridge PK suggest a practical next step.</p>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="container prototype-layout">
+                <div class="prototype-intro">
+                    <span class="flow-step">Step 1 of 4</span>
+                    <h2>Build your profile</h2>
+                    <p>Add the information CareerBridge PK needs to compare your background with an internship or job.</p>
+                    <div class="flow-note">
+                        <strong>What we use</strong>
+                        <p>Degree, semester, city, area of interest and your current skills.</p>
+                    </div>
+                </div>
+
+                <form class="prototype-form" id="student-profile-form">
+                    <div class="form-grid">
+                        <label class="full">
+                            Degree / programme
+                            <input type="text" name="degree" placeholder="e.g. BS Computer Science" required>
+                        </label>
+
+                        <label>
+                            Semester / study stage
+                            <input type="text" name="semester" placeholder="e.g. 8th semester" required>
+                        </label>
+
+                        <label>
+                            City
+                            <input type="text" name="city" placeholder="e.g. Lahore" required>
+                        </label>
+
+                        <label class="full">
+                            Career interest
+                            <input type="text" name="interest" placeholder="e.g. Data Analytics" required>
+                        </label>
+
+                        <label class="full">
+                            Skills
+                            <input type="text" name="skills" placeholder="e.g. Excel, Python, Statistics" required>
+                            <small>Separate skills with commas.</small>
+                        </label>
+
+                        <label class="full file-field">
+                            CV (optional for this prototype)
+                            <input type="file" name="cv" accept=".pdf,.doc,.docx">
+                            <small>The prototype records the file name only; it does not upload your CV to a server.</small>
+                        </label>
+                    </div>
+
+                    <div class="prototype-actions">
+                        <a class="btn btn-outline" href="index.html">Back home</a>
+                        <button class="btn" type="submit">Save and continue</button>
+                    </div>
+
+                    <div class="form-result" id="profile-result" role="status" aria-live="polite"></div>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container footer-grid">
+            <div class="footer-brand">
+                <img src="careerbridge-logo.png" alt="CareerBridge PK">
+                <p>Connecting ambition with practical opportunity.</p>
+            </div>
+
+            <div class="footer-links">
+                <a href="index.html">Home</a>
+                <a href="opportunities.html">Opportunities</a>
+                <a href="about.html">How it works</a>
+                <a href="student-profile.html">Student Profile</a>
+            </div>
+
+            <p class="copyright">© 2026 CareerBridge PK</p>
+        </div>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>

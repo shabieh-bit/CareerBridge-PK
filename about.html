@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="See how CareerBridge PK helps students move from uncertainty to a practical career plan.">
+    <title>How it works | CareerBridge PK</title>
+    <link rel="icon" href="careerbridge-logo.png" type="image/png">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="container nav">
+            <a class="brand" href="index.html" aria-label="CareerBridge PK home">
+                <img src="careerbridge-logo.png" alt="CareerBridge PK logo">
+            </a>
+
+            <button class="menu-toggle" aria-label="Toggle navigation" aria-expanded="false">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+
+            <nav class="nav-links" aria-label="Main navigation">
+                <a href="index.html">Home</a>
+                <a href="opportunities.html">Opportunities</a>
+                <a href="about.html" aria-current="page">How it works</a>
+                <a href="student-profile.html">Student Profile</a>
+                <a class="btn btn-small" href="#join">Get started</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="page-hero">
+            <div class="container page-hero-inner">
+                <span class="eyebrow">Built around your next step</span>
+                <h1>From uncertainty to a plan you can follow.</h1>
+                <p>
+                    CareerBridge PK is designed to help students and graduates move from career confusion
+                    toward practical, achievable action.
+                </p>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="container process-grid">
+                <article class="process-card">
+                    <span>01</span>
+                    <h3>Explore</h3>
+                    <p>Choose a direction and understand relevant career pathways before making a decision.</p>
+                </article>
+
+                <article class="process-card">
+                    <span>02</span>
+                    <h3>Prepare</h3>
+                    <p>Work on the practical skills, confidence, and application materials employers expect.</p>
+                </article>
+
+                <article class="process-card">
+                    <span>03</span>
+                    <h3>Progress</h3>
+                    <p>Turn your goal into manageable actions, track progress, and keep improving.</p>
+                </article>
+            </div>
+        </section>
+
+        <section class="section section-soft">
+            <div class="container info-grid">
+                <div>
+                    <span class="eyebrow">Why CareerBridge PK</span>
+                    <h2>Simple guidance for the moments that matter.</h2>
+                </div>
+
+                <div class="info-list">
+                    <div>
+                        <strong>Student-friendly</strong>
+                        <p>Clear language and practical next steps instead of complicated career advice.</p>
+                    </div>
+                    <div>
+                        <strong>Action focused</strong>
+                        <p>Each pathway is designed around something useful you can do next.</p>
+                    </div>
+                    <div>
+                        <strong>Growth oriented</strong>
+                        <p>Support that helps you connect, learn, and grow at every stage.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="join" class="section">
+            <div class="container form-panel">
+                <div>
+                    <span class="eyebrow">Join the journey</span>
+                    <h2>What would help you most?</h2>
+                    <p>
+                        Choose a pathway and the page will show a suggested next step.
+                        This demo does not send or store your personal information.
+                    </p>
+                </div>
+
+                <form class="interest-form" id="interest-form">
+                    <label>
+                        Your name
+                        <input type="text" name="name" placeholder="Your name" maxlength="60" required>
+                    </label>
+
+                    <label>
+                        Your main goal
+                        <select name="goal" required>
+                            <option value="">Choose a pathway</option>
+                            <option value="guidance">Career guidance</option>
+                            <option value="skills">Practical skills</option>
+                            <option value="internship">Internship readiness</option>
+                        </select>
+                    </label>
+
+                    <button class="btn" type="submit">Show my next step</button>
+                    <div class="form-result" id="form-result" role="status" aria-live="polite"></div>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container footer-grid">
+            <div class="footer-brand">
+                <img src="careerbridge-logo.png" alt="CareerBridge PK">
+                <p>Connecting ambition with practical opportunity.</p>
+            </div>
+
+            <div class="footer-links">
+                <a href="index.html">Home</a>
+                <a href="opportunities.html">Opportunities</a>
+                <a href="about.html">How it works</a>
+                <a href="student-profile.html">Student Profile</a>
+            </div>
+
+            <p class="copyright">© 2026 CareerBridge PK</p>
+        </div>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>

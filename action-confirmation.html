@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="See your recommended next step and confirm your application action.">
+    <title>Action Plan | CareerBridge PK</title>
+    <link rel="icon" href="careerbridge-logo.png" type="image/png">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="container nav">
+            <a class="brand" href="index.html" aria-label="CareerBridge PK home">
+                <img src="careerbridge-logo.png" alt="CareerBridge PK logo">
+            </a>
+
+            <button class="menu-toggle" aria-label="Toggle navigation" aria-expanded="false">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+
+            <nav class="nav-links" aria-label="Main navigation">
+                <a href="index.html">Home</a>
+                <a href="opportunities.html">Opportunities</a>
+                <a href="about.html">How it works</a>
+                <a href="student-profile.html">Student Profile</a>
+                <a class="btn btn-small" href="eligibility-check.html">Check eligibility</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="page-hero compact-hero">
+            <div class="container page-hero-inner">
+                <span class="eyebrow">Action and confirmation</span>
+                <h1>Turn the result into your next step.</h1>
+                <p>CareerBridge PK converts the match result into a simple action plan you can follow.</p>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="container action-shell">
+                <span class="flow-step">Step 4 of 4</span>
+
+                <div class="recommendation-box">
+                    <span class="tag">Recommended next step</span>
+                    <h2 id="recommendation-title">Build your profile first</h2>
+                    <p id="recommendation-copy">Complete the earlier steps to see a recommendation.</p>
+                </div>
+
+                <div class="action-grid">
+                    <section class="result-card">
+                        <span class="eyebrow">Skill to improve</span>
+                        <h3 id="skill-to-improve">No missing skill identified</h3>
+                        <p id="learning-time">Estimated learning time will appear here.</p>
+                        <div class="learning-track">
+                            <div class="learning-fill"></div>
+                        </div>
+                    </section>
+
+                    <section class="result-card">
+                        <span class="eyebrow">Application status</span>
+                        <h3 id="application-status">Not started</h3>
+                        <p>Your saved status stays in this browser for the prototype.</p>
+                    </section>
+                </div>
+
+                <div class="prototype-actions">
+                    <a class="btn btn-outline" href="match-result.html">Back to result</a>
+                    <button class="btn" id="apply-track-btn" type="button">Apply and track</button>
+                </div>
+
+                <div class="confirmation-panel" id="confirmation-panel" hidden>
+                    <strong>Application saved</strong>
+                    <p>Your opportunity has been added to the prototype application tracker.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container footer-grid">
+            <div class="footer-brand">
+                <img src="careerbridge-logo.png" alt="CareerBridge PK">
+                <p>Connecting ambition with practical opportunity.</p>
+            </div>
+
+            <div class="footer-links">
+                <a href="index.html">Home</a>
+                <a href="opportunities.html">Opportunities</a>
+                <a href="about.html">How it works</a>
+                <a href="student-profile.html">Student Profile</a>
+            </div>
+
+            <p class="copyright">© 2026 CareerBridge PK</p>
+        </div>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>
