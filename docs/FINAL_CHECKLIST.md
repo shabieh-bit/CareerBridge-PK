@@ -26,5 +26,5 @@
 ## Product honesty
 - [ ] Matching is labelled a skill-overlap estimate, not formal job eligibility
 - [ ] Vacancy requirements are manually entered
-- [ ] CV upload is not supported
+- [ ] CV is optional and can be added later
 - [ ] Apply-and-track saves an internal tracker; does not send an employer application
