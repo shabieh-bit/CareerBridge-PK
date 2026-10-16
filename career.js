@@ -12,7 +12,7 @@ async function api(path,method="GET",body){
 }
 function elt(tag,content,cls){const e=document.createElement(tag);if(content!==undefined)e.textContent=content;if(cls)e.className=cls;return e}
 function externalLink(url,label){
- try{const u=new URL(url);if(!["http:","https:"].includes(u.protocol))return elt("span","No verified link");const a=elt("a",label,"text-link");a.href=u.href;a.target="_blank";a.rel="noopener noreferrer";return a}
+ try{const u=new URL(url,location.href);if(!["http:","https:"].includes(u.protocol))return elt("span","No verified link");const a=elt("a",label,"text-link");a.href=u.href;a.target="_blank";a.rel="noopener noreferrer";return a}
  catch{return elt("span","Link unavailable")}
 }
 function chipList(target,items){target.replaceChildren();if(!items?.length){target.append(elt("p","No recognized skills found."));return}items.forEach(s=>target.append(elt("span",s,"skill-chip")))}
