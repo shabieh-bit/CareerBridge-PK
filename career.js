@@ -93,6 +93,10 @@ $("jobs-search-form").addEventListener("submit",async e=>{
  const query=new URLSearchParams({mode,role,city});
  try{const r=await api("/jobs/recommendations?"+query.toString());
   text("jobs-message",r.notice+" | Profile input: "+r.profileSource+" | "+r.jobs.length+" results returned.");
+  if(!r.providerAvailable&&mode!=="remote"){
+   $("jobs-message").append(document.createTextNode(" "));
+   $("jobs-message").append(externalLink("https://pk.jooble.org/","Search Pakistan jobs directly on Jooble ↗"));
+  }
   displayJobs(r.jobs)
  }catch(err){text("jobs-message",err.message)}
  finally{btn.disabled=false}
