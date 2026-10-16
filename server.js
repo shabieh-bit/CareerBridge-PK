@@ -112,6 +112,7 @@ app.post("/api/applications",requireUser,handle(async(req,res)=>{
  res.status(201).json({application:rows[0]});
 }));
 app.use("/api",(req,res)=>res.status(404).json({error:"API endpoint not found."}));
+app.use((req,res,next)=>{const basename=path.posix.basename(req.path);if(/\.(?:js|json|sql|ya?ml|md|env|lock)$/i.test(req.path)&&basename!=="app.js")return res.status(404).send("Not found");next()});
 app.use(express.static(path.join(__dirname),{index:"index.html",extensions:["html"],dotfiles:"deny",setHeaders(res,p){if(p.endsWith(".html"))res.setHeader("Cache-Control","no-store")}}));
 app.use((err,req,res,next)=>{console.error(err);res.status(500).json({error:"Server error. Please try again."})});
 const port=Number(process.env.PORT)||3000;
