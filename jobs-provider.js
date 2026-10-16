@@ -1,6 +1,7 @@
 "use strict";
 const {extractSkills,skillGap,skillsFromCsv}=require("./career-engine");
-const CACHE_MS=15*60*1000;
+// Protect limited Pakistan API requests; cached results may be up to one hour old.
+const CACHE_MS=60*60*1000;
 const cache=new Map();
 function safeUrl(value){
  try{const u=new URL(value);return ["https:","http:"].includes(u.protocol)?u.href:null}catch{return null}
