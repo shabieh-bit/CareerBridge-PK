@@ -206,7 +206,7 @@ async function extractCVContents(file){
  throw new Error("Unsupported CV type");
 }
 app.get("/api/cv/analysis",requireUser,handle(async(req,res)=>{
- const {rows}=await pool.query("SELECT a.result,a.analyzed_at FROM cv_analysis a JOIN cv_files f ON f.user_id=a.user_id AND f.uploaded_at=a.cv_uploaded_at WHERE a.user_id=$1",[req.user.id]);
+ const {rows}=await pool.query("SELECT a.result,a.analyzed_at FROM cv_analysis a JOIN cv_files f ON f.user_id=a.user_id WHERE a.user_id=$1",[req.user.id]);
  res.set("Cache-Control","no-store").json({analysis:rows[0]?.result||null,analyzedAt:rows[0]?.analyzed_at||null});
 }));
 app.post("/api/cv/analyze",requireUser,cvOrigin,cvAnalyzeLimit,handle(async(req,res)=>{
@@ -234,7 +234,7 @@ app.get("/api/jobs/recommendations",requireUser,handle(async(req,res)=>{
  if(roleInput.length>85)return res.status(400).json({error:"Role search is too long."});
  const [{rows:p},{rows:a}]=await Promise.all([
   pool.query("SELECT interest,skills,city FROM profiles WHERE user_id=$1",[req.user.id]),
-  pool.query("SELECT a.result FROM cv_analysis a JOIN cv_files f ON f.user_id=a.user_id AND f.uploaded_at=a.cv_uploaded_at WHERE a.user_id=$1",[req.user.id])
+  pool.query("SELECT a.result FROM cv_analysis a JOIN cv_files f ON f.user_id=a.user_id WHERE a.user_id=$1",[req.user.id])
  ]);
  const role=roleInput||String(p[0]?.interest||"").trim();
  if(role.length<3)return res.status(400).json({error:"Add a career interest to your student profile or type a job title."});
