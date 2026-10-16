@@ -6,7 +6,36 @@ const nav=document.querySelector(".nav-links");
 if(menu&&nav){menu.addEventListener("click",()=>menu.setAttribute("aria-expanded",String(nav.classList.toggle("open"))));nav.querySelectorAll("a").forEach(a=>a.addEventListener("click",()=>{nav.classList.remove("open");menu.setAttribute("aria-expanded","false")}))}
 async function request(url,method="GET"){const res=await fetch("/api"+url,{method,credentials:"same-origin",cache:"no-store"});const data=await res.json().catch(()=>({}));if(!res.ok)throw Object.assign(new Error(data.error||"Server request failed"),{status:res.status});return data}
 function linkFor(url){try{const parsed=new URL(url);return ["http:","https:"].includes(parsed.protocol)?parsed.href:null}catch{return null}}
-function fillRecords(id,items,emptyMessage,isApplication){const parent=el(id);parent.replaceChildren();if(!items.length){const p=document.createElement("p");p.className="dashboard-muted";p.textContent=emptyMessage;parent.append(p);return}items.slice(0,5).forEach(item=>{const card=document.createElement("div");card.className="dashboard-record";const title=document.createElement("strong");title.textContent=item.job?.title||"Opportunity";card.append(title);const meta=document.createElement("p");meta.textContent=isApplication?(item.status||"Tracked inside CareerBridge"):(item.job?.location||"Saved opportunity");card.append(meta);const href=linkFor(item.job?.link);if(href){const a=document.createElement("a");a.href=href;a.target="_blank";a.rel="noopener noreferrer";a.className="text-link";a.textContent="Open vacancy ↗";card.append(a)}parent.append(card)})}
+function fillRecords(id,items,emptyMessage,isApplication){
+ const parent=el(id);parent.replaceChildren();
+ if(!items.length){const p=document.createElement("p");p.className="dashboard-muted";p.textContent=emptyMessage;parent.append(p);return}
+ items.slice(0,5).forEach(item=>{
+  const card=document.createElement("div");card.className="dashboard-record";
+  const title=document.createElement("strong");title.textContent=item.job?.title||"Opportunity";card.append(title);
+  const meta=document.createElement("p");meta.textContent=isApplication?(item.status||"Tracked inside CareerBridge"):(item.job?.location||"Saved opportunity");card.append(meta);
+  const actions=document.createElement("div");actions.className="record-actions";
+  const href=linkFor(item.job?.link);
+  if(href){const a=document.createElement("a");a.href=href;a.target="_blank";a.rel="noopener noreferrer";a.className="text-link";a.textContent="Open vacancy ↗";actions.append(a)}
+  const remove=document.createElement("button");remove.type="button";remove.className="record-remove";remove.textContent="Remove";remove.setAttribute("aria-label","Remove "+(item.job?.title||"opportunity")+" from "+(isApplication?"tracked applications":"saved opportunities"));
+  remove.addEventListener("click",async()=>{
+    const kind=isApplication?"tracked application":"saved opportunity";
+    if(!window.confirm("Remove this "+kind+" from your CareerBridge account? This cannot be undone."))return;
+    remove.disabled=true;remove.textContent="Removing…";
+    try{
+      const endpoint=isApplication?"/applications/":"/saved-jobs/";
+      await request(endpoint+encodeURIComponent(item.id),"DELETE");
+      items.splice(items.findIndex(entry=>String(entry.id)===String(item.id)),1);
+      fillRecords(id,items,emptyMessage,isApplication);
+      set(isApplication?"metric-actions":"metric-saved",String(items.length));
+      set("dashboard-status","Record removed from your account.");
+    }catch(err){
+      remove.disabled=false;remove.textContent="Remove";
+      set("dashboard-status",err.message||"Unable to remove the record. Please try again.");
+    }
+  });
+  actions.append(remove);card.append(actions);parent.append(card);
+ })
+}
 function skillTags(skills){const wrap=el("dashboard-skills");wrap.replaceChildren();String(skills||"").split(",").map(x=>x.trim()).filter(Boolean).slice(0,20).forEach(skill=>{const tag=document.createElement("span");tag.className="skill-chip";tag.textContent=skill;wrap.append(tag)})}
 async function init(){try{
  const user=(await request("/auth/me")).user;
