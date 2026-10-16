@@ -15,7 +15,7 @@ async function jsonFetch(url,options={}){
 async function joobleSearch(role,city){
  const key=process.env.JOOBLE_PK_API_KEY;
  if(!key)return {jobs:[],available:false,notice:"Pakistan job feed is not connected. Add the Pakistan-specific Jooble API key to Render to enable live vacancies."};
- const body={keywords:role,location:city||"",page:"1",ResultOnPage:"30"};
+ const body={keywords:role,location:city||"Pakistan",page:"1",ResultOnPage:30};
  const raw=await jsonFetch("https://pk.jooble.org/api/"+encodeURIComponent(key),{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
  const rows=Array.isArray(raw.jobs)?raw.jobs:[];
  return {available:true,notice:"Live listings supplied by Jooble Pakistan. Confirm location, employer requirements, and whether vacancies remain open before applying.",
@@ -43,7 +43,7 @@ async function retrieveJobs({role,mode,city}){
  const hit=cache.get(key);if(hit&&Date.now()-hit.time<CACHE_MS)return hit.value;
  let value;
  if(mode==="remote")value=await jobicyAnywhere(role);
- else value=await joobleSearch(role,mode==="city"?city:"");
+ else value=await joobleSearch(role,mode==="city"?city:"Pakistan");
  cache.set(key,{time:Date.now(),value});
  if(cache.size>100)cache.delete(cache.keys().next().value);
  return value;
