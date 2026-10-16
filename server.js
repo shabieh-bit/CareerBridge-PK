@@ -135,7 +135,7 @@ const cvMime={".pdf":"application/pdf",".docx":"application/vnd.openxmlformats-o
 function cvName(header){
  if(typeof header!=="string"||header.length>500)return null;
  let name;try{name=decodeURIComponent(header)}catch{return null}
- if(!name||name.length>100||name.includes("/")||name.includes("\\")||/[\\x00-\\x1f\\x7f]/.test(name))return null;
+ if(!name||name.length>100||name.includes("/")||name.includes("\\"))return null;
  if(!/^[a-zA-Z0-9 _().-]+$/.test(name))return null;
  return name;
 }
