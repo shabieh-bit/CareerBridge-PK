@@ -102,6 +102,22 @@ app.post("/api/saved-jobs",requireUser,handle(async(req,res)=>{
  const {rows}=await pool.query("INSERT INTO saved_jobs(user_id,job_link,job) VALUES($1,$2,$3) ON CONFLICT(user_id,job_link) DO UPDATE SET job=EXCLUDED.job RETURNING id,job,created_at",[req.user.id,found.rows[0].job.link,{...found.rows[0].job,match:found.rows[0].match.percentage}]);
  res.status(201).json({saved:rows[0]});
 }));
+// Ownership is checked in SQL; knowing a record ID never grants deletion rights.
+const parseRecordId=(raw)=>/^[1-9][0-9]{0,17}$/.test(raw||"")?raw:null;
+app.delete("/api/saved-jobs/:id",requireUser,handle(async(req,res)=>{
+ const id=parseRecordId(req.params.id);
+ if(!id)return res.status(400).json({error:"Invalid saved job ID."});
+ const {rows}=await pool.query("DELETE FROM saved_jobs WHERE id=$1 AND user_id=$2 RETURNING id",[id,req.user.id]);
+ if(!rows.length)return res.status(404).json({error:"Saved job not found."});
+ res.set("Cache-Control","no-store").json({deleted:true,id:rows[0].id});
+}));
+app.delete("/api/applications/:id",requireUser,handle(async(req,res)=>{
+ const id=parseRecordId(req.params.id);
+ if(!id)return res.status(400).json({error:"Invalid application ID."});
+ const {rows}=await pool.query("DELETE FROM applications WHERE id=$1 AND user_id=$2 RETURNING id",[id,req.user.id]);
+ if(!rows.length)return res.status(404).json({error:"Tracked application not found."});
+ res.set("Cache-Control","no-store").json({deleted:true,id:rows[0].id});
+}));
 app.get("/api/applications",requireUser,handle(async(req,res)=>{
  const {rows}=await pool.query("SELECT id,job,status,updated_at FROM applications WHERE user_id=$1 ORDER BY updated_at DESC",[req.user.id]);res.json({applications:rows});
 }));
