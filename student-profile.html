@@ -80,7 +80,7 @@
                             <small>Separate skills with commas.</small>
                         </label>
 
-                        <p class="profile-file-note">CV upload is not available in this version. Your profile details are saved securely to your account, but no files are uploaded.</p>
+                        <p class="profile-file-note"><strong>CV is optional.</strong> You can save your profile without a CV, then <a href="#cv-section">upload it now or come back later</a>. Your saved skills are used for matching.</p>
                     </div>
 
                     <div class="prototype-actions">
@@ -91,6 +91,27 @@
                     <div class="form-result" id="profile-result" role="status" aria-live="polite"></div>
                 </form>
             </div>
+            <section class="container cv-section" id="cv-section" aria-labelledby="cv-title">
+                <div class="cv-panel">
+                    <div>
+                        <span class="eyebrow">Optional document</span>
+                        <h2 id="cv-title">Your CV / Résumé</h2>
+                        <p>Add your CV whenever you're ready. It is private to your account and can be downloaded, replaced, or removed later.</p>
+                        <p id="cv-current" class="cv-current" role="status">Checking your uploaded CV…</p>
+                    </div>
+                    <div>
+                        <label class="cv-file-label" for="cv-file">Choose a CV (PDF or DOCX, maximum 3 MB)</label>
+                        <input id="cv-file" type="file" accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document">
+                        <div class="cv-actions">
+                            <button class="btn" type="button" id="cv-upload-btn">Upload / replace CV</button>
+                            <a class="btn btn-outline" id="cv-download-link" href="/api/cv/download" hidden>Download my CV</a>
+                            <button class="btn btn-outline cv-remove-btn" type="button" id="cv-remove-btn" hidden>Remove CV</button>
+                        </div>
+                        <p id="cv-feedback" class="cv-feedback" role="status" aria-live="polite"></p>
+                        <small>Uploading a CV does not change your skill-match score. No automatic CV analysis is performed.</small>
+                    </div>
+                </div>
+            </section>
         </section>
     </main>
 
@@ -112,6 +133,7 @@
         </div>
     </footer>
 
-    <script src="app.js"></script>
+    <script src="app.js" defer></script>
+    <script src="cv.js" defer></script>
 </body>
 </html>
