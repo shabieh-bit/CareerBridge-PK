@@ -19,5 +19,9 @@
     "pg": "^8.13.1",
     "mammoth": "^1.11.0",
     "pdf-parse": "^1.1.1"
+  },
+  "devDependencies": {
+    "pdf-lib": "^1.17.1",
+    "jszip": "^3.10.1"
   }
 }
