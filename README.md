@@ -24,7 +24,7 @@ CareerBridge PK helps students compare their skills with a job or internship, un
 5. Deploy. Test the live URL, `/api/health`, signup, profile save, matching, saved jobs, logout and login. Do not claim hosting is complete until this works.
 6. Replace the placeholder URL below with your verified Render URL.
 
-**Live website:** Not deployed yet — add verified URL here.
+**Live website:** https://careerbridge-pk.onrender.com — available via Render. Verify latest deployment before the midterm.
 
 ## Demo workflow
 1. Register as a student on /auth.html.
@@ -64,3 +64,7 @@ UPDATE users SET is_admin = TRUE WHERE email = 'confirmed-owner@example.com';
 ```
 
 Replace the example email only after checking the intended account. Sign out and back in if necessary. `admin.js` is a public asset; authorization happens in the protected server API, not only in JavaScript.
+
+## Phase 1 midterm polish
+
+The Phase 1 update improves the homepage action flow, responsive login and navigation, accurate 'skill match' wording, and a student dashboard with profile completion, latest match and saved progress. A live demo checklist is at [docs/PHASE1_DEMO.md](docs/PHASE1_DEMO.md). No live job feed or automated vacancy extraction is claimed.

@@ -1,9 +1,9 @@
 name: CareerBridge tests
 on:
   push:
-    branches: [main, feature/midterm-backend]
+    branches: [main, feature/midterm-backend, feature/phase1-midterm-polish]
   pull_request:
-    branches: [main]
+    branches: [main, feature/midterm-backend]
 jobs:
   test:
     runs-on: ubuntu-latest
