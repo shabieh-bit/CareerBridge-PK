@@ -50,9 +50,6 @@ Passwords are hashed; sessions are stored as token hashes in the database, with 
 ## Team roles and commits
 **Before submission:** Replace this section with the actual members' names, responsibilities and GitHub commit links. Each team member must contribute commits themselves, and each member should speak in the defense. Do not invent contributions.
 
-## Midterm defense (7 minutes)
-5-minute investor pitch: problem, target users, solution, live demonstration, differentiation and next steps. 2-minute Q&A. Show the live service (not localhost or screenshots).
-
 ## Administrator dashboard
 
 The private admin dashboard is available at `/admin.html`. Registered accounts are **not** administrators automatically. The API checks `users.is_admin` on each authenticated request and rejects non-admin users with HTTP 403. The dashboard shows totals and the latest 50 records from each category; it deliberately excludes password hashes and session tokens.
@@ -64,7 +61,3 @@ UPDATE users SET is_admin = TRUE WHERE email = 'confirmed-owner@example.com';
 ```
 
 Replace the example email only after checking the intended account. Sign out and back in if necessary. `admin.js` is a public asset; authorization happens in the protected server API, not only in JavaScript.
-
-## Phase 1 midterm polish
-
-The Phase 1 update improves the homepage action flow, responsive login and navigation, accurate 'skill match' wording, and a student dashboard with profile completion, latest match and saved progress. A live demo checklist is at [docs/PHASE1_DEMO.md](docs/PHASE1_DEMO.md). No live job feed or automated vacancy extraction is claimed.
