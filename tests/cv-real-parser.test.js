@@ -9,7 +9,7 @@ async function pdfFixture(){
  page.drawText("Bachelor of Science Computer Science", {x:40,y:740,size:14});
  page.drawText("SKILLS: Python, SQL, Excel and Power BI", {x:40,y:700,size:14});
  page.drawText("EXPERIENCE: Data Analysis internship", {x:40,y:660,size:14});
- return Buffer.from(await pdf.save());
+ return Buffer.from(await pdf.save({useObjectStreams:false}));
 }
 async function docxFixture(){
  const zip=new JSZip();
@@ -37,7 +37,7 @@ test("real text-based PDF and DOCX can be uploaded and analyzed without exposing
    const up=await api("/cv","PUT",blob,cookie,{"Content-Type":"application/octet-stream","X-File-Name":name});
    assert.equal(up.status,200,JSON.stringify(up.data));
    const analyze=await api("/cv/analyze","POST",JSON.stringify({}),cookie,{"Content-Type":"application/json"});
-   assert.equal(analyze.status,200,JSON.stringify(analyze.data));
+   assert.equal(analyze.status,200,JSON.stringify(analyze.data)+" Server: "+logs.slice(-1000));
    assert.ok(analyze.data.analysis.skills.includes(expectSkill),JSON.stringify(analyze.data.analysis));
    const stored=await api("/cv/analysis","GET",undefined,cookie);
    assert.equal(stored.status,200);
