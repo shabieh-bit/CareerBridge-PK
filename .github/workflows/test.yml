@@ -1,7 +1,7 @@
 name: CareerBridge tests
 on:
   push:
-    branches: [main, feature/midterm-backend, feature/phase1-midterm-polish, feature/optional-cv-upload]
+    branches: [main, feature/midterm-backend, feature/phase1-midterm-polish, feature/optional-cv-upload, feature/cv-jobs-action-plan]
   pull_request:
     branches: [main, feature/midterm-backend]
 jobs:
@@ -37,4 +37,8 @@ jobs:
       - run: node --check app.js
       - run: node --check dashboard.js
       - run: node --check cv.js
+      - run: node --check career.js
+      - run: node --check career-engine.js
+      - run: node --check jobs-provider.js
+      - run: node --check learning.js
       - run: node --check admin.js
