@@ -50,3 +50,30 @@ test("CV-derived role suggestions require multiple skill signals",()=>{
  const cv=parseCVText("Bachelor of Computer Science\\nSkills: SQL, Python, Excel, Data Analysis");
  assert.ok(cv.suggestedRoles.includes("Data Analyst"));
 });
+
+test("Pakistan-wide Jooble request sends required location and numeric result limit",async()=>{
+ const savedKey=process.env.JOOBLE_PK_API_KEY;
+ const savedFetch=globalThis.fetch;
+ let called=false;
+ process.env.JOOBLE_PK_API_KEY="UNIT_TEST_ONLY";
+ globalThis.fetch=async(url,options)=>{
+   called=true;
+   assert.equal(new URL(url).host,"pk.jooble.org");
+   assert.equal(options.method,"POST");
+   const request=JSON.parse(options.body);
+   assert.equal(request.location,"Pakistan");
+   assert.equal(request.ResultOnPage,30);
+   assert.ok(request.keywords.includes("Nationwide test"));
+   return {ok:true,json:async()=>({jobs:[]})};
+ };
+ try{
+   const result=await retrieveJobs({role:"Nationwide test "+Date.now(),mode:"pakistan",city:""});
+   assert.equal(called,true);
+   assert.equal(result.available,true);
+   assert.deepEqual(result.jobs,[]);
+ }finally{
+   globalThis.fetch=savedFetch;
+   if(savedKey===undefined)delete process.env.JOOBLE_PK_API_KEY;
+   else process.env.JOOBLE_PK_API_KEY=savedKey;
+ }
+});
