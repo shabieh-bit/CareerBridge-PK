@@ -1,1 +1,38 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Sign in | CareerBridge PK</title><link rel="stylesheet" href="style.css"></head><body><header class="site-header"><div class="container nav"><a href="index.html" class="brand"><img src="careerbridge-logo.png" alt="CareerBridge PK"></a><nav class="nav-links"><a href="index.html">Home</a><a href="student-profile.html">Student profile</a></nav></div></header><main><section class="page-hero"><div class="container page-hero-inner"><span class="eyebrow">Student account</span><h1>Welcome to CareerBridge.</h1><p>Sign in to store your profile and saved opportunities securely on the server.</p></div></section><section class="section"><div class="container" style="max-width:600px"><form class="prototype-form" id="auth-form"><label>Action<select id="auth-mode"><option value="register">Create account</option><option value="login">Sign in</option></select></label><label id="auth-name-wrap">Your name<input name="name" placeholder="Full name" autocomplete="name"></label><label>Email<input type="email" name="email" autocomplete="email" required></label><label>Password<input type="password" name="password" autocomplete="current-password" minlength="10" required><small>At least 10 characters.</small></label><button type="submit" class="btn" id="auth-submit">Create account</button><div class="form-result" id="auth-result" role="status"></div></form></div></section></main><script src="app.js"></script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Create your free CareerBridge PK student account or sign in.">
+  <title>Create Account or Sign In | CareerBridge PK</title>
+  <link rel="icon" href="careerbridge-logo.png" type="image/png"><link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="site-header"><div class="container nav">
+    <a href="index.html" class="brand" aria-label="CareerBridge PK home"><img src="careerbridge-logo.png" alt="CareerBridge PK"></a>
+    <button class="menu-toggle" type="button" aria-label="Toggle navigation" aria-expanded="false" aria-controls="auth-nav"><span></span><span></span><span></span></button>
+    <nav class="nav-links" id="auth-nav" aria-label="Main navigation"><a href="index.html">Home</a><a href="opportunities.html">Opportunities</a><a href="about.html">How it works</a></nav>
+  </div></header>
+  <main><section class="page-hero dashboard-hero"><div class="container page-hero-inner">
+    <span class="eyebrow">Welcome to CareerBridge PK</span><h1>Your next step starts here.</h1>
+    <p>Create an account to save your student profile, skill comparisons and application preparation progress on the server.</p>
+  </div></section>
+  <section class="section"><div class="container auth-layout">
+    <div class="auth-info"><span class="eyebrow">Why create an account?</span><h2>Keep your career progress in one place.</h2>
+      <div class="step-card"><span>01</span><div><strong>Create your profile</strong><p>Add your degree, semester, interests and skills.</p></div></div>
+      <div class="step-card"><span>02</span><div><strong>Compare your skills</strong><p>Understand which job requirements match your skills.</p></div></div>
+      <div class="step-card"><span>03</span><div><strong>Save your progress</strong><p>Revisit saved opportunities and tracked next steps.</p></div></div>
+    </div>
+    <form class="prototype-form auth-form" id="auth-form">
+      <label>Choose an action<select id="auth-mode" aria-label="Account action"><option value="register">Create an account</option><option value="login">Sign in</option></select></label>
+      <label id="auth-name-wrap">Your name<input name="name" type="text" autocomplete="name" maxlength="100" placeholder="Your full name"></label>
+      <label>Email address<input type="email" name="email" autocomplete="email" maxlength="254" required placeholder="you@example.com"></label>
+      <label>Password<input type="password" name="password" autocomplete="current-password" minlength="10" maxlength="128" required placeholder="At least 10 characters"><small>Use a unique password you don't use elsewhere.</small></label>
+      <button class="btn" type="submit" id="auth-submit">Create account</button>
+      <div class="form-result" id="auth-result" role="status" aria-live="polite"></div>
+      <p class="dashboard-muted auth-privacy">Your password is hashed and never displayed in your profile. CV upload is not supported in this version.</p>
+    </form>
+  </div></section></main>
+  <footer class="footer"><div class="container footer-grid"><div class="footer-brand"><img src="careerbridge-logo.png" alt="CareerBridge PK"><p>Connecting ambition with practical opportunity.</p></div><div class="footer-links"><a href="index.html">Home</a><a href="about.html">How it works</a></div><p class="copyright">© 2026 CareerBridge PK</p></div></footer>
+  <script src="app.js" defer></script>
+</body>
+</html>
