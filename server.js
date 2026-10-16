@@ -191,9 +191,12 @@ app.delete("/api/cv",requireUser,cvOrigin,handle(async(req,res)=>{
 const cvAnalyzeLimit=rateLimit({windowMs:15*60*1000,limit:8,standardHeaders:"draft-7",legacyHeaders:false});
 async function extractCVContents(file){
  if(file.mime_type==="application/pdf"){
-  const parser=require("pdf-parse");
-  const result=await parser(file.file_data,{max:25});
-  return String(result.text||"");
+  const {PDFParse}=require("pdf-parse");
+  const reader=new PDFParse({data:new Uint8Array(file.file_data)});
+  try{
+   const result=await reader.getText({first:25});
+   return String(result.text||"");
+  }finally{await reader.destroy()}
  }
  if(file.mime_type==="application/vnd.openxmlformats-officedocument.wordprocessingml.document"){
   const mammoth=require("mammoth");
