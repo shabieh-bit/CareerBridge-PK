@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Discover jobs in Pakistan based on your CV and get a practical skills development action plan.">
+<title>Find Matching Jobs | CareerBridge PK</title><link rel="icon" href="careerbridge-logo.png" type="image/png"><link rel="stylesheet" href="style.css"></head>
+<body>
+<header class="site-header"><div class="container nav">
+<a class="brand" href="index.html" aria-label="CareerBridge home"><img src="careerbridge-logo.png" alt="CareerBridge PK"></a>
+<button class="menu-toggle" type="button" aria-label="Toggle navigation" aria-expanded="false" aria-controls="career-nav"><span></span><span></span><span></span></button>
+<nav class="nav-links" id="career-nav"><a href="index.html">Home</a><a href="student-profile.html">My profile</a><a href="dashboard.html">Dashboard</a><a href="career.html" aria-current="page">Find matching jobs</a></nav>
+</div></header>
+<main>
+<section class="page-hero career-hero"><div class="container page-hero-inner"><span class="eyebrow">CV + live opportunities</span><h1>Discover jobs that fit your skills.</h1>
+<p>Review extracted CV skills, choose your preferred work location and build a practical learning plan for skills you want to develop.</p></div></section>
+<section class="section career-section"><div class="container">
+<div class="career-layout">
+<section class="career-panel">
+<span class="flow-step">Step 1 · CV analysis</span><h2>Your career profile</h2>
+<p>Use your saved student skills, or ask CareerBridge to read the text from your uploaded CV. Results need your review and are not employment guarantees.</p>
+<p id="cv-analysis-status" role="status">Checking your saved profile and CV…</p>
+<div id="cv-analysis-data" hidden><h3>Skills found in your CV</h3><div class="chip-list" id="cv-extracted-skills"></div><p id="cv-education"></p>
+<p class="dashboard-disclaimer">Please review these automatically extracted skills. Scanned/image-only CVs may not work.</p>
+<button class="btn btn-outline" type="button" id="use-cv-skills">Add these skills to my profile</button></div>
+<div class="career-actions"><a class="btn btn-outline" href="student-profile.html#cv-section">Upload / replace CV</a><button class="btn" type="button" id="analyze-cv">Analyze my CV</button></div>
+</section>
+<section class="career-panel">
+<span class="flow-step">Step 2 · Job discovery</span><h2>Where do you want to work?</h2>
+<form id="jobs-search-form">
+<label for="career-role">Job title or career field</label><input id="career-role" name="role" required minlength="3" maxlength="85" placeholder="e.g. Data Analyst, Marketing, Food Safety">
+<fieldset class="career-fieldset"><legend>Search location</legend>
+<label><input type="radio" name="mode" value="city" checked> My city</label>
+<label><input type="radio" name="mode" value="pakistan"> Anywhere in Pakistan</label>
+<label><input type="radio" name="mode" value="remote"> Worldwide remote roles</label>
+</fieldset>
+<label for="career-city" id="career-city-label">My city in Pakistan</label><input id="career-city" name="city" placeholder="e.g. Lahore" maxlength="90" required>
+<button class="btn" type="submit" id="search-jobs">Find relevant jobs →</button>
+</form>
+<p class="dashboard-disclaimer">Location is typed by you. We don't collect GPS coordinates. Listings come from external providers and may close without notice.</p>
+</section>
+</div>
+<section class="career-results" aria-labelledby="jobs-heading"><div class="dashboard-panel-header"><div><span class="eyebrow">Step 3 · Opportunities</span><h2 id="jobs-heading">Job recommendations</h2></div></div>
+<p id="jobs-message" role="status" aria-live="polite">Choose your search criteria and click Find relevant jobs.</p><div id="jobs-cards" class="career-job-grid"></div>
+</section>
+<section class="career-results" aria-labelledby="plans-heading"><span class="eyebrow">Step 4 · Skill development</span><h2 id="plans-heading">My career action plans</h2>
+<p>Choose a real listing, follow learning resources for the missing skills, update your student profile and re-check that job. Completing a course never automatically claims you have a skill.</p>
+<p id="plans-message" role="status"></p><div id="plans-cards" class="career-job-grid"></div>
+</section>
+</div></section></main>
+<footer class="footer"><div class="container footer-grid"><div class="footer-brand"><img src="careerbridge-logo.png" alt="CareerBridge PK"><p>Connecting ambition with practical opportunity.</p></div><div class="footer-links"><a href="student-profile.html">Student Profile</a><a href="dashboard.html">My dashboard</a></div><p class="copyright">© 2026 CareerBridge PK</p></div></footer>
+<script src="career.js" defer></script></body></html>
