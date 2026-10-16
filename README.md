@@ -52,3 +52,15 @@ Passwords are hashed; sessions are stored as token hashes in the database, with 
 
 ## Midterm defense (7 minutes)
 5-minute investor pitch: problem, target users, solution, live demonstration, differentiation and next steps. 2-minute Q&A. Show the live service (not localhost or screenshots).
+
+## Administrator dashboard
+
+The private admin dashboard is available at `/admin.html`. Registered accounts are **not** administrators automatically. The API checks `users.is_admin` on each authenticated request and rejects non-admin users with HTTP 403. The dashboard shows totals and the latest 50 records from each category; it deliberately excludes password hashes and session tokens.
+
+To authorize a trusted owner account, first confirm their exact registered email, then run the following in the private Neon SQL editor (do **not** commit or paste credentials):
+
+```sql
+UPDATE users SET is_admin = TRUE WHERE email = 'confirmed-owner@example.com';
+```
+
+Replace the example email only after checking the intended account. Sign out and back in if necessary. `admin.js` is a public asset; authorization happens in the protected server API, not only in JavaScript.
