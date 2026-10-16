@@ -44,13 +44,30 @@ function skillsFromCsv(raw){
  const source=String(raw||"").split(/[,;\n]/).map(x=>x.trim()).filter(Boolean).slice(0,100);
  return [...new Map(source.map(x=>[x.toLowerCase(),x])).values()];
 }
+function suggestRoles(skills){
+ const have=new Set((skills||[]).map(s=>s.toLowerCase()));
+ const groups=[
+  {role:"Data Analyst",skills:["Python","SQL","Excel","Statistics","Data Analysis","Pandas"]},
+  {role:"Business Intelligence Analyst",skills:["Power BI","Tableau","Excel","SQL"]},
+  {role:"Frontend Developer",skills:["JavaScript","HTML","CSS","React","TypeScript"]},
+  {role:"Backend Developer",skills:["Node.js","Python","Java","SQL","Django"]},
+  {role:"Digital Marketing Executive",skills:["Digital Marketing","SEO","Google Analytics","Meta Ads","Content Writing"]},
+  {role:"Food Safety & Quality Officer",skills:["HACCP","Food Safety","Quality Assurance"]},
+  {role:"Junior Finance Analyst",skills:["Accounting","Excel","Financial Analysis","QuickBooks"]},
+  {role:"UI/UX Designer",skills:["UI/UX","Figma","Photoshop","Illustrator"]},
+  {role:"Engineering Analyst",skills:["MATLAB","AutoCAD","SolidWorks","BIM"]},
+  {role:"Project Coordinator",skills:["Project Management","Agile","Communication"]}
+ ];
+ return groups.map(g=>({...g,score:g.skills.filter(s=>have.has(s.toLowerCase())).length}))
+  .filter(g=>g.score>=2).sort((a,b)=>b.score-a.score).slice(0,5).map(g=>g.role);
+}
 function parseCVText(text){
  const clean=String(text||"").slice(0,50000).replace(/[\x00-\x08\x0b-\x1f]/g," ");
  const skills=extractSkills(clean);
  const education=(clean.match(/\b(?:BS|BSc|Bachelor(?:'s)?|BE|MSc|MS|MBA|BBA|PhD|Master(?:'s)?)\b[^\n]{0,70}/ig)||[])
   .map(x=>x.trim().slice(0,85)).slice(0,5);
  // No invented experience or degree details. User checks all extracted fields.
- return {skills,education,extractedCharacters:clean.length,needsReview:true,
+ return {skills,education,suggestedRoles:suggestRoles(skills),extractedCharacters:clean.length,needsReview:true,
    note:"Automated keyword extraction may miss skills, experience or scanned text. Please review your results."};
 }
 function skillGap(profileSkills,requiredSkills){
@@ -84,4 +101,4 @@ function learningFor(skill){
  resources.push({label:"Find tutorial videos on YouTube",url:"https://www.youtube.com/results?search_query="+encodeURIComponent(skill+" beginner tutorial"),kind:"video-search"});
  return {skill,resources,certificateNote:"Some platforms offer paid exams/certificates. Check the provider before enrolling."};
 }
-module.exports={extractSkills,parseCVText,skillGap,skillsFromCsv,learningFor};
+module.exports={extractSkills,parseCVText,skillGap,skillsFromCsv,learningFor,suggestRoles};
