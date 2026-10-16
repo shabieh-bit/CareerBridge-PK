@@ -196,7 +196,7 @@ app.get("/api/admin/overview",requireUser,requireAdmin,handle(async(req,res)=>{
  res.json({counts:counts.rows[0],users:users.rows,profiles:profiles.rows,matches:matches.rows,savedJobs:saved.rows,applications:applications.rows,limit:50});
 }));
 app.use("/api",(req,res)=>res.status(404).json({error:"API endpoint not found."}));
-app.use((req,res,next)=>{const basename=path.posix.basename(req.path);if(/\.(?:js|json|sql|ya?ml|md|env|lock)$/i.test(req.path)&&!["app.js","admin.js","dashboard.js"].includes(basename))return res.status(404).send("Not found");next()});
+app.use((req,res,next)=>{const basename=path.posix.basename(req.path);if(/\.(?:js|json|sql|ya?ml|md|env|lock)$/i.test(req.path)&&!["app.js","admin.js","dashboard.js","cv.js"].includes(basename))return res.status(404).send("Not found");next()});
 app.use(express.static(path.join(__dirname),{index:"index.html",extensions:["html"],dotfiles:"deny",setHeaders(res,p){if(p.endsWith(".html"))res.setHeader("Cache-Control","no-store")}}));
 app.use((err,req,res,next)=>{if(err.type==="entity.too.large")return res.status(413).json({error:"File is too large. Maximum 3 MB."});console.error(err);res.status(500).json({error:"Server error. Please try again."})});
 const port=Number(process.env.PORT)||3000;
