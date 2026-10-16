@@ -30,8 +30,10 @@ test("account, profile, matching, saved job, and session persistence", { skip: !
     const email="ci-"+unique+"@example.test";
     const registered=await call("/auth/register","POST",{name:"Test Student",email,password:"MySecurePassword123!"});
     assert.equal(registered.status,201,JSON.stringify(registered.json));
+    assert.equal(registered.json.user.isAdmin,false);
     assert.ok(registered.cookie,"Missing authentication cookie");
     cookie=registered.cookie;
+    assert.equal((await call("/admin/overview")).status,403,"Students cannot access admin data");
     const profile=await call("/profile","PUT",{degree:"BSc",semester:"4",city:"Lahore",interest:"Data Analytics",skills:"Python, Excel"});
     assert.equal(profile.status,200);
     const match=await call("/matches","POST",{jobLink:"https://example.org/internship",jobTitle:"Data Internship",jobLocation:"Lahore",requirements:"Python, Excel, SQL"});
