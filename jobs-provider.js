@@ -50,7 +50,8 @@ async function retrieveJobs({role,mode,city}){
 function recommendJobs(rawJobs,{skills,role}){
  const profile=skillsFromCsv(skills),roleWords=String(role||"").toLowerCase().split(/\W+/).filter(w=>w.length>3);
  return rawJobs.map(job=>{
-  const detected=extractSkills(job.title+" "+job.description);
+  // A job title alone is not evidence that a skill is required.
+  const detected=extractSkills(job.description);
   const match=skillGap(profile,detected);
   const overlap=(match.matched||[]).length;
   const roleScore=roleWords.filter(w=>(job.title+" "+job.description).toLowerCase().includes(w)).length;
