@@ -6,6 +6,8 @@ const bcrypt = require("bcryptjs");
 const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
 const { Pool } = require("pg");
+const {parseCVText,skillsFromCsv,skillGap,learningFor}=require("./career-engine");
+const {retrieveJobs,recommendJobs,safeUrl}=require("./jobs-provider");
 const app = express();
 app.disable("x-powered-by");
 app.set("trust proxy", 1);
@@ -165,6 +167,7 @@ app.put("/api/cv",requireUser,cvOrigin,express.raw({type:"application/octet-stre
  VALUES($1,$2,$3,$4,$5)
  ON CONFLICT(user_id) DO UPDATE SET file_name=EXCLUDED.file_name,mime_type=EXCLUDED.mime_type,size_bytes=EXCLUDED.size_bytes,file_data=EXCLUDED.file_data,uploaded_at=NOW()
  RETURNING file_name,size_bytes,uploaded_at`,[req.user.id,name,cvMime[ext],req.body.length,req.body]);
+ await pool.query("DELETE FROM cv_analysis WHERE user_id=$1",[req.user.id]);
  res.set("Cache-Control","no-store").json({cv:rows[0]});
 }));
 app.get("/api/cv/download",requireUser,handle(async(req,res)=>{
@@ -181,7 +184,105 @@ app.get("/api/cv/download",requireUser,handle(async(req,res)=>{
 app.delete("/api/cv",requireUser,cvOrigin,handle(async(req,res)=>{
  const {rows}=await pool.query("DELETE FROM cv_files WHERE user_id=$1 RETURNING user_id",[req.user.id]);
  if(!rows.length)return res.status(404).json({error:"No CV found for this account."});
+ await pool.query("DELETE FROM cv_analysis WHERE user_id=$1",[req.user.id]);
  res.set("Cache-Control","no-store").json({deleted:true});
+}));
+// User consent required: reading the uploaded CV is an explicit request.
+const cvAnalyzeLimit=rateLimit({windowMs:15*60*1000,limit:8,standardHeaders:"draft-7",legacyHeaders:false});
+async function extractCVContents(file){
+ if(file.mime_type==="application/pdf"){
+  const parser=require("pdf-parse");
+  const result=await parser(file.file_data,{max:25});
+  return String(result.text||"");
+ }
+ if(file.mime_type==="application/vnd.openxmlformats-officedocument.wordprocessingml.document"){
+  const mammoth=require("mammoth");
+  const parsed=await mammoth.extractRawText({buffer:file.file_data});
+  return String(parsed.value||"");
+ }
+ throw new Error("Unsupported CV type");
+}
+app.get("/api/cv/analysis",requireUser,handle(async(req,res)=>{
+ const {rows}=await pool.query("SELECT a.result,a.analyzed_at FROM cv_analysis a JOIN cv_files f ON f.user_id=a.user_id AND f.uploaded_at=a.cv_uploaded_at WHERE a.user_id=$1",[req.user.id]);
+ res.set("Cache-Control","no-store").json({analysis:rows[0]?.result||null,analyzedAt:rows[0]?.analyzed_at||null});
+}));
+app.post("/api/cv/analyze",requireUser,cvOrigin,cvAnalyzeLimit,handle(async(req,res)=>{
+ const {rows}=await pool.query("SELECT file_data,mime_type,uploaded_at FROM cv_files WHERE user_id=$1",[req.user.id]);
+ if(!rows.length)return res.status(404).json({error:"Upload a CV in Student Profile first."});
+ let parsedText;
+ try{parsedText=await extractCVContents(rows[0])}catch(err){
+  console.error("CV parsing error:",err.name);
+  return res.status(422).json({error:"Could not read this CV. Use a text-based PDF or DOCX (scanned images are not supported)."});
+ }
+ const analysis=parseCVText(parsedText);
+ if(analysis.extractedCharacters<30)return res.status(422).json({error:"The CV has insufficient extractable text. Try a text-based PDF or DOCX."});
+ const {rows:stored}=await pool.query(`INSERT INTO cv_analysis(user_id,cv_uploaded_at,result)
+ VALUES($1,$2,$3::jsonb) ON CONFLICT(user_id) DO UPDATE
+ SET cv_uploaded_at=EXCLUDED.cv_uploaded_at,result=EXCLUDED.result,analyzed_at=NOW()
+ RETURNING result`,[req.user.id,rows[0].uploaded_at,JSON.stringify(analysis)]);
+ res.set("Cache-Control","no-store").json({analysis:stored[0].result});
+}));
+app.get("/api/jobs/recommendations",requireUser,handle(async(req,res)=>{
+ const mode=String(req.query.mode||"city");
+ if(!["city","pakistan","remote"].includes(mode))return res.status(400).json({error:"Select My City, Anywhere in Pakistan or Worldwide Remote."});
+ const city=String(req.query.city||"").trim().slice(0,90);
+ if(mode==="city"&&!/^[a-zA-Z .'-]{2,90}$/.test(city))return res.status(400).json({error:"Enter your city in Pakistan."});
+ const roleInput=String(req.query.role||"").trim();
+ if(roleInput.length>85)return res.status(400).json({error:"Role search is too long."});
+ const [{rows:p},{rows:a}]=await Promise.all([
+  pool.query("SELECT interest,skills,city FROM profiles WHERE user_id=$1",[req.user.id]),
+  pool.query("SELECT a.result FROM cv_analysis a JOIN cv_files f ON f.user_id=a.user_id AND f.uploaded_at=a.cv_uploaded_at WHERE a.user_id=$1",[req.user.id])
+ ]);
+ const role=roleInput||String(p[0]?.interest||"").trim();
+ if(role.length<3)return res.status(400).json({error:"Add a career interest to your student profile or type a job title."});
+ const skills=[...new Set([...skillsFromCsv(p[0]?.skills),...(Array.isArray(a[0]?.result?.skills)?a[0].result.skills:[])])];
+ try{
+  const raw=await retrieveJobs({role,mode,city});
+  res.set("Cache-Control","private, no-store").json({jobs:recommendJobs(raw.jobs,{skills,role}),providerAvailable:raw.available,notice:raw.notice,search:{role,mode,city:mode==="city"?city:null},profileSource:a.length?"Saved profile + analyzed CV":"Saved profile (CV not analyzed)"});
+ }catch(e){
+  console.error("Job search provider issue:",e.message);
+  res.status(502).json({error:"Live job provider temporarily unavailable. Please try again later.",jobs:[]});
+ }
+}));
+app.get("/api/action-plans",requireUser,handle(async(req,res)=>{
+ const {rows}=await pool.query("SELECT id,job,required_skills,completed_skills,created_at,updated_at FROM action_plans WHERE user_id=$1 ORDER BY id DESC LIMIT 25",[req.user.id]);
+ res.set("Cache-Control","no-store").json({plans:rows.map(x=>({...x,learning:x.required_skills.slice(0,12).map(learningFor)}))});
+}));
+app.post("/api/action-plans",requireUser,cvOrigin,handle(async(req,res)=>{
+ const {job,requiredSkills}=req.body||{};
+ if(!job||typeof job!=="object"||!safeUrl(job.link)||!valid(job.title,2,180)||!valid(job.location||"Pakistan",1,140))
+   return res.status(400).json({error:"Choose a valid job listing."});
+ if(!Array.isArray(requiredSkills))return res.status(400).json({error:"Skill requirements must be an array."});
+ const needed=skillsFromCsv(requiredSkills.join(",")).slice(0,20);
+ if(needed.some(x=>x.length>80))return res.status(400).json({error:"Invalid skill entry."});
+ if(!needed.length)return res.status(400).json({error:"No skills were detectable from this listing. Enter requirements manually in the existing eligibility checker."});
+ const payload={title:job.title.trim(),link:safeUrl(job.link),location:job.location||"Pakistan",company:String(job.company||"").slice(0,120),source:String(job.source||"").slice(0,60)};
+ const {rows}=await pool.query("INSERT INTO action_plans(user_id,job,required_skills) VALUES($1,$2::jsonb,$3::jsonb) RETURNING id,job,required_skills,completed_skills,created_at",[req.user.id,JSON.stringify(payload),JSON.stringify(needed)]);
+ res.status(201).json({plan:rows[0],learning:needed.map(learningFor)});
+}));
+app.put("/api/action-plans/:id/progress",requireUser,cvOrigin,handle(async(req,res)=>{
+ const id=parseRecordId(req.params.id),completed=req.body?.completedSkills;
+ if(!id||!Array.isArray(completed))return res.status(400).json({error:"Invalid progress update."});
+ const {rows:existing}=await pool.query("SELECT required_skills FROM action_plans WHERE id=$1 AND user_id=$2",[id,req.user.id]);
+ if(!existing.length)return res.status(404).json({error:"Action plan not found."});
+ const allowed=new Set(existing[0].required_skills.map(x=>x.toLowerCase()));
+ const checked=skillsFromCsv(completed.join(",")).filter(x=>allowed.has(x.toLowerCase())).slice(0,20);
+ const {rows}=await pool.query("UPDATE action_plans SET completed_skills=$1::jsonb,updated_at=NOW() WHERE id=$2 AND user_id=$3 RETURNING id,completed_skills",[JSON.stringify(checked),id,req.user.id]);
+ res.json({progress:rows[0]});
+}));
+app.post("/api/action-plans/:id/recheck",requireUser,cvOrigin,handle(async(req,res)=>{
+ const id=parseRecordId(req.params.id);
+ if(!id)return res.status(400).json({error:"Invalid action plan."});
+ const [{rows:plans},{rows:profiles}]=await Promise.all([
+  pool.query("SELECT job,required_skills FROM action_plans WHERE id=$1 AND user_id=$2",[id,req.user.id]),
+  pool.query("SELECT skills FROM profiles WHERE user_id=$1",[req.user.id])
+ ]);
+ if(!plans.length)return res.status(404).json({error:"Action plan not found."});
+ if(!profiles.length)return res.status(400).json({error:"Update your student profile skills first."});
+ const plan=plans[0];
+ const match=skillGap(profiles[0].skills,plan.required_skills.join(","));
+ const {rows}=await pool.query("INSERT INTO matches(user_id,job,match) VALUES($1,$2::jsonb,$3::jsonb) RETURNING id,job,match,created_at",[req.user.id,JSON.stringify({...plan.job,requirements:plan.required_skills}),JSON.stringify(match)]);
+ res.set("Cache-Control","no-store").json({result:rows[0],learning:match.missing.map(learningFor)});
 }));
 app.get("/api/admin/overview",requireUser,requireAdmin,handle(async(req,res)=>{
  const [counts,users,profiles,matches,saved,applications]=await Promise.all([
