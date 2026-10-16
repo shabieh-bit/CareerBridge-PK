@@ -19,7 +19,10 @@ function chipList(target,items){target.replaceChildren();if(!items?.length){targ
 function updateAnalysis(a){
  state.analysis=a;
  const panel=$("cv-analysis-data");panel.hidden=!a;
- if(a){chipList($("cv-extracted-skills"),a.skills);text("cv-education",a.education.length?"Education mentioned: "+a.education.join(" · "):"Education could not be reliably extracted.");text("cv-analysis-status","Text extracted. Review the skills before updating your profile.");}
+ if(a){chipList($("cv-extracted-skills"),a.skills);text("cv-education",a.education.length?"Education mentioned: "+a.education.join(" · "):"Education could not be reliably extracted.");const suggestions=$("cv-suggested-roles");suggestions.replaceChildren();for(const role of a.suggestedRoles||[]){
+   const btn=elt("button",role,"filter-btn");btn.type="button";btn.addEventListener("click",()=>{$("career-role").value=role;$("career-role").focus()});suggestions.append(btn);
+  }
+  if(!(a.suggestedRoles||[]).length)suggestions.append(elt("span","No confident title suggestions; type your preferred field below."));text("cv-analysis-status","Text extracted. Review the skills before updating your profile.");}
  else text("cv-analysis-status","No analyzed CV yet. You can analyze it now, or use your manually entered profile skills to search.");
 }
 async function loadProfile(){
