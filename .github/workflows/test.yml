@@ -35,3 +35,5 @@ jobs:
       - run: npm test
       - run: node --check server.js
       - run: node --check app.js
+      - run: node --check dashboard.js
+      - run: node --check admin.js
