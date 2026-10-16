@@ -1,363 +1,46 @@
-const menuToggle = document.querySelector(".menu-toggle");
-const navLinks = document.querySelector(".nav-links");
-
-if (menuToggle && navLinks) {
-    menuToggle.addEventListener("click", () => {
-        const isOpen = navLinks.classList.toggle("open");
-        menuToggle.setAttribute("aria-expanded", String(isOpen));
-    });
-
-    navLinks.querySelectorAll("a").forEach((link) => {
-        link.addEventListener("click", () => {
-            navLinks.classList.remove("open");
-            menuToggle.setAttribute("aria-expanded", "false");
-        });
-    });
+"use strict";
+const $=s=>document.querySelector(s);
+const menuToggle=$(".menu-toggle"),navLinks=$(".nav-links");
+if(menuToggle&&navLinks){menuToggle.addEventListener("click",()=>{const open=navLinks.classList.toggle("open");menuToggle.setAttribute("aria-expanded",String(open))});navLinks.querySelectorAll("a").forEach(a=>a.addEventListener("click",()=>navLinks.classList.remove("open")))}
+async function api(url,method="GET",body){
+ const response=await fetch("/api"+url,{method,headers:{"Content-Type":"application/json"},credentials:"same-origin",body:body===undefined?undefined:JSON.stringify(body)});
+ let data;try{data=await response.json()}catch{throw Error("Service unavailable. Try again.")}
+ if(!response.ok)throw Error(data.error||"Request failed");
+ return data;
 }
-
-const interestForm = document.querySelector("#interest-form");
-const formResult = document.querySelector("#form-result");
-
-if (interestForm && formResult) {
-    const nextSteps = {
-        guidance: "Start by listing 3 roles that interest you, then compare the skills each role requires.",
-        skills: "Choose one practical skill to improve this week and set aside three focused learning sessions.",
-        internship: "Create a shortlist of 5 internship targets and tailor your CV for the first one."
-    };
-
-    interestForm.addEventListener("submit", (event) => {
-        event.preventDefault();
-
-        const formData = new FormData(interestForm);
-        const name = formData.get("name").trim();
-        const goal = formData.get("goal");
-
-        formResult.textContent = `${name}, your suggested next step: ${nextSteps[goal]}`;
-        formResult.classList.add("show");
-    });
+function message(selector,text){const el=$(selector);if(el){el.textContent=text;el.classList.add("show")}}
+function safeText(selector,text){const el=$(selector);if(el)el.textContent=text||""}
+function chipList(selector,arr,missing=false){const el=$(selector);if(!el)return;el.replaceChildren();if(!arr.length){el.textContent="None identified.";return}for(const skill of arr){const span=document.createElement("span");span.className="skill-chip"+(missing?" missing":"");span.textContent=skill;el.append(span)}}
+const needAuth=()=>{window.location.href="auth.html?next="+encodeURIComponent(location.pathname.split("/").pop()||"student-profile.html")};
+let currentUser=null,currentResult=null;
+async function authStatus(){
+ try{currentUser=(await api("/auth/me")).user}catch{}
+ const nav=$(".nav-links");if(nav){const item=document.createElement("a");item.href=currentUser?"dashboard.html":"auth.html";item.textContent=currentUser?"My dashboard":"Sign in";nav.append(item)}
 }
-
-const filterButtons = document.querySelectorAll(".filter-btn");
-const opportunityCards = document.querySelectorAll(".opportunity-card");
-
-if (filterButtons.length && opportunityCards.length) {
-    filterButtons.forEach((button) => {
-        button.addEventListener("click", () => {
-            filterButtons.forEach((item) => item.classList.remove("active"));
-            button.classList.add("active");
-
-            const filter = button.dataset.filter;
-
-            opportunityCards.forEach((card) => {
-                const showCard = filter === "all" || card.dataset.category === filter;
-                card.hidden = !showCard;
-            });
-        });
-    });
+function requireLogin(){if(!currentUser){needAuth();return false}return true}
+async function init(){
+ await authStatus();
+ const interestForm=$("#interest-form");
+ if(interestForm)interestForm.addEventListener("submit",e=>{e.preventDefault();const data=new FormData(interestForm);const suggestions={guidance:"List three target roles and compare their required skills.",skills:"Select one useful skill and schedule three practice sessions.",internship:"Shortlist five internships and tailor your CV."};message("#form-result",String(data.get("name"))+", suggested next step: "+(suggestions[data.get("goal")]||"Explore opportunities."))});
+ const filterButtons=document.querySelectorAll(".filter-btn");
+ filterButtons.forEach(b=>b.addEventListener("click",()=>{filterButtons.forEach(x=>x.classList.toggle("active",x===b));document.querySelectorAll(".opportunity-card").forEach(card=>card.hidden=b.dataset.filter!=="all"&&card.dataset.category!==b.dataset.filter)}));
+ const authForm=$("#auth-form");
+ if(authForm){const mode=$("#auth-mode"),nameWrap=$("#auth-name-wrap"),submit=$("#auth-submit");
+ const update=()=>{const register=mode.value==="register";nameWrap.hidden=!register;submit.textContent=register?"Create account":"Sign in"};mode.addEventListener("change",update);update();
+ authForm.addEventListener("submit",async e=>{e.preventDefault();const fd=new FormData(authForm),register=mode.value==="register";try{await api("/auth/"+(register?"register":"login"),"POST",{name:fd.get("name"),email:fd.get("email"),password:fd.get("password")});const next=new URLSearchParams(location.search).get("next");location.href=/^(student-profile|eligibility-check|match-result|action-confirmation|dashboard|admin)\.html$/.test(next||"")?next:"dashboard.html"}catch(e){message("#auth-result",e.message)}})}
+ const profileForm=$("#student-profile-form");
+ if(profileForm){if(!requireLogin())return;try{const {profile}=await api("/profile");if(profile)for(const [k,v]of Object.entries(profile)){const el=profileForm.elements.namedItem(k);if(el&&el.type!=="file")el.value=v}}catch(e){message("#profile-result",e.message)}
+ profileForm.addEventListener("submit",async e=>{e.preventDefault();const f=new FormData(profileForm);try{await api("/profile","PUT",Object.fromEntries(["degree","semester","city","interest","skills"].map(k=>[k,String(f.get(k)||"")])));message("#profile-result","Profile saved to your account.");location.href="eligibility-check.html"}catch(e){message("#profile-result",e.message)}})}
+ const eligibilityForm=$("#eligibility-form");
+ if(eligibilityForm){if(!requireLogin())return;try{const {profile}=await api("/profile");const summary=$("#profile-summary");if(summary)summary.textContent=profile?profile.degree+" · "+profile.city+" · "+profile.interest+" · Skills: "+profile.skills:"No profile saved yet. Create your profile first."}catch(e){message("#eligibility-result",e.message)}
+ eligibilityForm.addEventListener("submit",async e=>{e.preventDefault();const f=new FormData(eligibilityForm);try{await api("/matches","POST",Object.fromEntries(["jobLink","jobTitle","jobLocation","requirements"].map(k=>[k,String(f.get(k)||"")])));location.href="match-result.html"}catch(e){message("#eligibility-result",e.message)}})}
+ if($("#match-percent")||$("#recommendation-title")){if(!requireLogin())return;try{currentResult=(await api("/matches/latest")).result;if(!currentResult){message("#save-result","Run an eligibility check first.");return}const {match,job}=currentResult;
+ if($("#match-percent")){safeText("#match-percent",String(match.percentage));safeText("#match-count",match.matched.length+" of "+match.total+" requirements matched");safeText("#match-badge",match.percentage>=80?"High match":match.percentage>=60?"Good match":"Needs preparation");safeText("#score-circle",match.percentage+"%");const fill=$("#progress-fill");if(fill)fill.style.width=match.percentage+"%";chipList("#matched-skills",match.matched);chipList("#missing-skills",match.missing,true);safeText("#result-job-title",job.title);safeText("#result-job-meta",job.location);const link=$("#result-job-link");if(link)link.href=job.link}
+ if($("#recommendation-title")){const missing=match.missing[0];safeText("#recommendation-title",match.percentage>=70?"Apply now":"Build missing skills first");safeText("#recommendation-copy",missing?"Improve "+missing+" and consider your other missing requirements.":"Your listed skills match all provided requirements.");safeText("#skill-to-improve",missing||"No missing skill identified");safeText("#learning-time",missing?"Suggested starter learning block: 6 focused hours.":"No gaps identified in entered requirements.");const {applications}=await api("/applications");const application=applications.find(a=>a.job.link===job.link);safeText("#application-status",application?application.status:"Not started")}
+ }catch(e){message("#save-result",e.message)}}
+ const save=$("#save-job-btn");if(save)save.addEventListener("click",async()=>{try{if(!currentResult)throw Error("No match to save.");await api("/saved-jobs","POST",{matchId:Number(currentResult.id)});message("#save-result","Job saved to your account.")}catch(e){message("#save-result",e.message)}});
+ const track=$("#apply-track-btn");if(track)track.addEventListener("click",async()=>{try{if(!currentResult)throw Error("Run eligibility check first.");await api("/applications","POST",{matchId:Number(currentResult.id)});safeText("#application-status","Application tracked");const panel=$("#confirmation-panel");if(panel){panel.hidden=false;panel.querySelector("p").textContent="Saved to your CareerBridge tracker. This does not submit an application to the employer."}}catch(e){alert(e.message)}});
+ const dashboard=$("#dashboard-data");if(dashboard){if(!requireLogin())return;safeText("#welcome-name",currentUser.name);try{const [p,j,a]=await Promise.all([api("/profile"),api("/saved-jobs"),api("/applications")]);dashboard.replaceChildren();const intro=document.createElement("p");intro.textContent=p.profile?"Profile: "+p.profile.degree+" in "+p.profile.city:"Create your student profile to begin.";dashboard.append(intro);for(const [label,records]of [["Saved jobs",j.jobs],["Tracked applications",a.applications]]){const h=document.createElement("h2");h.textContent=label+" ("+records.length+")";dashboard.append(h);for(const record of records){const row=document.createElement("p");row.textContent=record.job.title+" — "+(record.status||"Saved");dashboard.append(row)}}}catch(e){dashboard.textContent=e.message}}
+ const logout=$("#logout-btn");if(logout)logout.addEventListener("click",async()=>{await api("/auth/logout","POST");location.href="index.html"});
 }
-
-
-// ==========================================================
-// CareerBridge PK prototype flow
-// Front-end demonstration using localStorage.
-// ==========================================================
-
-const cbpStorage = {
-    get(key, fallback = null) {
-        try {
-            const value = localStorage.getItem(key);
-            return value ? JSON.parse(value) : fallback;
-        } catch {
-            return fallback;
-        }
-    },
-    set(key, value) {
-        localStorage.setItem(key, JSON.stringify(value));
-    }
-};
-
-const normalizeSkills = (value) =>
-    String(value || "")
-        .split(",")
-        .map((item) => item.trim())
-        .filter(Boolean);
-
-const profileForm = document.querySelector("#student-profile-form");
-
-if (profileForm) {
-    const savedProfile = cbpStorage.get("careerbridgeProfile", {});
-
-    Object.entries(savedProfile).forEach(([key, value]) => {
-        const field = profileForm.elements.namedItem(key);
-        if (field && field.type !== "file") {
-            field.value = value;
-        }
-    });
-
-    profileForm.addEventListener("submit", (event) => {
-        event.preventDefault();
-
-        const data = new FormData(profileForm);
-        const cvInput = profileForm.elements.namedItem("cv");
-        const profile = {
-            degree: data.get("degree").trim(),
-            semester: data.get("semester").trim(),
-            city: data.get("city").trim(),
-            interest: data.get("interest").trim(),
-            skills: data.get("skills").trim(),
-            cvName: cvInput && cvInput.files.length ? cvInput.files[0].name : ""
-        };
-
-        cbpStorage.set("careerbridgeProfile", profile);
-
-        const result = document.querySelector("#profile-result");
-        if (result) {
-            result.textContent = "Profile saved. Opening the eligibility check...";
-            result.classList.add("show");
-        }
-
-        window.setTimeout(() => {
-            window.location.href = "eligibility-check.html";
-        }, 450);
-    });
-}
-
-const eligibilityForm = document.querySelector("#eligibility-form");
-const profileSummary = document.querySelector("#profile-summary");
-
-if (eligibilityForm) {
-    const profile = cbpStorage.get("careerbridgeProfile");
-
-    if (profileSummary) {
-        if (profile) {
-            profileSummary.innerHTML = `
-                <strong>${profile.degree || "Student profile"}</strong>
-                <p>${profile.city || "City not added"} · ${profile.interest || "Interest not added"}</p>
-                <p><strong>Skills:</strong> ${profile.skills || "No skills added"}</p>
-            `;
-        } else {
-            profileSummary.innerHTML = `
-                <strong>No profile saved yet</strong>
-                <p>Create your student profile before checking eligibility.</p>
-            `;
-        }
-    }
-
-    eligibilityForm.addEventListener("submit", (event) => {
-        event.preventDefault();
-
-        const resultBox = document.querySelector("#eligibility-result");
-        const profileData = cbpStorage.get("careerbridgeProfile");
-
-        if (!profileData) {
-            if (resultBox) {
-                resultBox.textContent = "Please create your student profile first.";
-                resultBox.classList.add("show");
-            }
-            return;
-        }
-
-        const data = new FormData(eligibilityForm);
-        const profileSkills = normalizeSkills(profileData.skills);
-        const requirements = normalizeSkills(data.get("requirements"));
-
-        const profileSkillMap = new Map(
-            profileSkills.map((skill) => [skill.toLowerCase(), skill])
-        );
-
-        const matched = requirements.filter((skill) =>
-            profileSkillMap.has(skill.toLowerCase())
-        );
-
-        const missing = requirements.filter((skill) =>
-            !profileSkillMap.has(skill.toLowerCase())
-        );
-
-        const percentage = requirements.length
-            ? Math.round((matched.length / requirements.length) * 100)
-            : 0;
-
-        const job = {
-            link: data.get("jobLink").trim(),
-            title: data.get("jobTitle").trim(),
-            location: data.get("jobLocation").trim(),
-            requirements
-        };
-
-        cbpStorage.set("careerbridgeJob", job);
-        cbpStorage.set("careerbridgeMatch", {
-            matched,
-            missing,
-            percentage,
-            total: requirements.length
-        });
-
-        if (resultBox) {
-            resultBox.textContent = "Eligibility checked. Opening your match result...";
-            resultBox.classList.add("show");
-        }
-
-        window.setTimeout(() => {
-            window.location.href = "match-result.html";
-        }, 450);
-    });
-}
-
-const matchPercent = document.querySelector("#match-percent");
-
-if (matchPercent) {
-    const match = cbpStorage.get("careerbridgeMatch", {
-        matched: [],
-        missing: [],
-        percentage: 0,
-        total: 0
-    });
-    const job = cbpStorage.get("careerbridgeJob", {});
-    const profile = cbpStorage.get("careerbridgeProfile", {});
-
-    const matchedCount = match.matched.length;
-    const percentage = Number(match.percentage) || 0;
-
-    matchPercent.textContent = percentage;
-    document.querySelector("#match-count").textContent =
-        `${matchedCount} of ${match.total} requirements matched`;
-
-    const badge = document.querySelector("#match-badge");
-    if (badge) {
-        badge.textContent =
-            percentage >= 80 ? "High match" :
-            percentage >= 60 ? "Good match" :
-            "Needs preparation";
-    }
-
-    const circle = document.querySelector("#score-circle");
-    if (circle) circle.textContent = `${percentage}%`;
-
-    const fill = document.querySelector("#progress-fill");
-    if (fill) fill.style.width = `${percentage}%`;
-
-    const matchedWrap = document.querySelector("#matched-skills");
-    if (matchedWrap) {
-        matchedWrap.innerHTML = match.matched.length
-            ? match.matched.map((skill) => `<span class="skill-chip">${skill}</span>`).join("")
-            : '<span class="small">No required skills matched yet.</span>';
-    }
-
-    const missingWrap = document.querySelector("#missing-skills");
-    if (missingWrap) {
-        missingWrap.innerHTML = match.missing.length
-            ? match.missing.map((skill) => `<span class="skill-chip missing">${skill}</span>`).join("")
-            : '<span class="small">No missing skills identified.</span>';
-    }
-
-    const jobTitle = document.querySelector("#result-job-title");
-    const jobMeta = document.querySelector("#result-job-meta");
-    const jobLink = document.querySelector("#result-job-link");
-
-    if (jobTitle) jobTitle.textContent = job.title || "Selected opportunity";
-    if (jobMeta) {
-        jobMeta.textContent = [
-            job.location || "Location not added",
-            profile.interest || "Career interest"
-        ].join(" · ");
-    }
-    if (jobLink) {
-        jobLink.href = job.link || "#";
-        if (!job.link) {
-            jobLink.removeAttribute("target");
-        }
-    }
-
-    const saveButton = document.querySelector("#save-job-btn");
-    const saveResult = document.querySelector("#save-result");
-
-    if (saveButton) {
-        saveButton.addEventListener("click", () => {
-            const savedJobs = cbpStorage.get("careerbridgeSavedJobs", []);
-            const duplicate = savedJobs.some((item) => item.link === job.link);
-
-            if (!duplicate) {
-                savedJobs.push({
-                    ...job,
-                    match: percentage,
-                    savedAt: new Date().toISOString()
-                });
-                cbpStorage.set("careerbridgeSavedJobs", savedJobs);
-            }
-
-            if (saveResult) {
-                saveResult.textContent = duplicate
-                    ? "This job is already saved."
-                    : "Job saved to this browser.";
-                saveResult.classList.add("show");
-            }
-        });
-    }
-}
-
-const recommendationTitle = document.querySelector("#recommendation-title");
-
-if (recommendationTitle) {
-    const match = cbpStorage.get("careerbridgeMatch", {
-        missing: [],
-        percentage: 0
-    });
-    const job = cbpStorage.get("careerbridgeJob", {});
-
-    const percentage = Number(match.percentage) || 0;
-    const firstMissing = match.missing && match.missing.length
-        ? match.missing[0]
-        : "No missing skill identified";
-
-    const recommendationCopy = document.querySelector("#recommendation-copy");
-    const skillToImprove = document.querySelector("#skill-to-improve");
-    const learningTime = document.querySelector("#learning-time");
-    const status = document.querySelector("#application-status");
-
-    if (percentage >= 70) {
-        recommendationTitle.textContent = "Apply now";
-        recommendationCopy.textContent = match.missing.length
-            ? `You match most requirements. Apply while improving ${firstMissing}.`
-            : "You match the listed requirements. Prepare your application and apply.";
-    } else if (percentage > 0) {
-        recommendationTitle.textContent = "Build the missing skills first";
-        recommendationCopy.textContent =
-            `Strengthen ${firstMissing} and the other missing requirements before applying.`;
-    } else {
-        recommendationTitle.textContent = "Complete your eligibility check";
-        recommendationCopy.textContent =
-            "Go back to the eligibility check to generate your personalised action plan.";
-    }
-
-    if (skillToImprove) skillToImprove.textContent = firstMissing;
-    if (learningTime) {
-        learningTime.textContent = match.missing.length
-            ? "Suggested starter learning block: about 6 focused hours."
-            : "No immediate skill gap identified from this prototype match.";
-    }
-
-    const application = cbpStorage.get("careerbridgeApplication");
-    if (status) {
-        status.textContent = application?.status ||
-            (percentage >= 70 ? "Ready to apply" : "Preparation recommended");
-    }
-
-    const applyButton = document.querySelector("#apply-track-btn");
-    const confirmation = document.querySelector("#confirmation-panel");
-
-    if (applyButton) {
-        applyButton.addEventListener("click", () => {
-            const applicationData = {
-                title: job.title || "Selected opportunity",
-                link: job.link || "",
-                status: "Application tracked",
-                updatedAt: new Date().toISOString()
-            };
-
-            cbpStorage.set("careerbridgeApplication", applicationData);
-
-            if (status) status.textContent = applicationData.status;
-            if (confirmation) confirmation.hidden = false;
-        });
-    }
-}
+init().catch(e=>console.error(e));

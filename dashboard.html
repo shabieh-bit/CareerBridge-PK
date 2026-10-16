@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Track your CareerBridge PK profile, skill matches, saved jobs and application progress.">
+  <title>My Dashboard | CareerBridge PK</title>
+  <link rel="icon" href="careerbridge-logo.png" type="image/png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container nav">
+      <a class="brand" href="index.html" aria-label="CareerBridge PK home"><img src="careerbridge-logo.png" alt="CareerBridge PK logo"></a>
+      <button class="menu-toggle" type="button" aria-label="Toggle navigation" aria-expanded="false" aria-controls="dashboard-nav"><span></span><span></span><span></span></button>
+      <nav class="nav-links" id="dashboard-nav" aria-label="Main navigation">
+        <a href="index.html">Home</a>
+        <a href="opportunities.html">Opportunities</a>
+        <a href="student-profile.html">Edit profile</a>
+        <a href="eligibility-check.html">Check skills</a>
+      </nav>
+    </div>
+  </header>
+  <main>
+    <section class="page-hero dashboard-hero">
+      <div class="container page-hero-inner">
+        <span class="eyebrow">Your career workspace</span>
+        <h1>Welcome back, <span id="welcome-name">student</span>.</h1>
+        <p>Track your career readiness in one place. All records on this page are retrieved from your own account.</p>
+      </div>
+    </section>
+    <section class="section dashboard-section">
+      <div class="container">
+        <p class="dashboard-status" id="dashboard-status" role="status" aria-live="polite">Loading your dashboard…</p>
+        <div id="dashboard-content" hidden>
+          <div class="dashboard-metrics" aria-label="Your activity overview">
+            <article class="metric-card"><span>Profile completion</span><strong id="metric-profile">0%</strong><div class="mini-progress" aria-hidden="true"><span id="metric-profile-fill"></span></div></article>
+            <article class="metric-card"><span>Latest skill match</span><strong id="metric-match">—</strong><small>Based on skills entered</small></article>
+            <article class="metric-card"><span>Saved opportunities</span><strong id="metric-saved">0</strong><small>Stored in your account</small></article>
+            <article class="metric-card"><span>Tracked actions</span><strong id="metric-actions">0</strong><small>Not employer submissions</small></article>
+          </div>
+          <div class="dashboard-columns">
+            <section class="dashboard-panel">
+              <div class="dashboard-panel-header"><div><span class="eyebrow">My profile</span><h2>Career snapshot</h2></div><a class="text-link" href="student-profile.html">Edit profile →</a></div>
+              <p id="dashboard-profile" class="dashboard-muted"></p>
+              <div id="dashboard-skills" class="chip-list"></div>
+              <div class="dashboard-panel-footer"><a class="btn" href="eligibility-check.html">Check another role →</a></div>
+            </section>
+            <section class="dashboard-panel">
+              <div class="dashboard-panel-header"><div><span class="eyebrow">Your last check</span><h2>Recent skill comparison</h2></div><a class="text-link" href="match-result.html">View details →</a></div>
+              <h3 id="dashboard-match-title">No checks yet</h3>
+              <p id="dashboard-match-detail" class="dashboard-muted"></p>
+              <p class="dashboard-disclaimer">The percentage measures entered skill overlap, not formal eligibility for employment.</p>
+            </section>
+          </div>
+          <div class="dashboard-columns">
+            <section class="dashboard-panel"><div class="dashboard-panel-header"><div><span class="eyebrow">Saved for later</span><h2>Saved opportunities</h2></div></div><div id="dashboard-saved" class="dashboard-records"></div></section>
+            <section class="dashboard-panel"><div class="dashboard-panel-header"><div><span class="eyebrow">Your progress</span><h2>Application tracker</h2></div></div><div id="dashboard-applications" class="dashboard-records"></div></section>
+          </div>
+          <div class="dashboard-actions">
+            <a class="btn btn-outline" id="admin-dashboard-link" href="admin.html" hidden>Admin dashboard</a>
+            <button class="btn btn-outline" type="button" id="logout-btn">Sign out</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+  <footer class="footer"><div class="container footer-grid"><div class="footer-brand"><img src="careerbridge-logo.png" alt="CareerBridge PK"><p>Connecting ambition with practical opportunity.</p></div><div class="footer-links"><a href="index.html">Home</a><a href="opportunities.html">Opportunities</a><a href="about.html">How it works</a></div><p class="copyright">© 2026 CareerBridge PK</p></div></footer>
+  <script src="dashboard.js" defer></script>
+</body>
+</html>
