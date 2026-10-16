@@ -244,9 +244,21 @@ app.get("/api/jobs/recommendations",requireUser,handle(async(req,res)=>{
   res.status(502).json({error:"Live job provider temporarily unavailable. Please try again later.",jobs:[]});
  }
 }));
+app.get("/api/learning-resources",requireUser,handle(async(req,res)=>{
+ const requested=String(req.query.skills||"").slice(0,300);
+ const selected=skillsFromCsv(requested).slice(0,8);
+ res.set("Cache-Control","no-store").json({learning:selected.map(learningFor)});
+}));
 app.get("/api/action-plans",requireUser,handle(async(req,res)=>{
- const {rows}=await pool.query("SELECT id,job,required_skills,completed_skills,created_at,updated_at FROM action_plans WHERE user_id=$1 ORDER BY id DESC LIMIT 25",[req.user.id]);
- res.set("Cache-Control","no-store").json({plans:rows.map(x=>({...x,learning:x.required_skills.slice(0,12).map(learningFor)}))});
+ const [stored,profiles]=await Promise.all([
+ pool.query("SELECT id,job,required_skills,completed_skills,created_at,updated_at FROM action_plans WHERE user_id=$1 ORDER BY id DESC LIMIT 25",[req.user.id]),
+ pool.query("SELECT skills FROM profiles WHERE user_id=$1",[req.user.id])
+ ]);
+ const skills=profiles.rows[0]?.skills||"";
+ res.set("Cache-Control","no-store").json({plans:stored.rows.map(x=>({
+  ...x,currentGap:skillGap(skills,x.required_skills.join(",")),
+  learning:x.required_skills.slice(0,20).map(learningFor)
+ }))});
 }));
 app.post("/api/action-plans",requireUser,cvOrigin,handle(async(req,res)=>{
  const {job,requiredSkills}=req.body||{};
@@ -297,7 +309,7 @@ app.get("/api/admin/overview",requireUser,requireAdmin,handle(async(req,res)=>{
  res.json({counts:counts.rows[0],users:users.rows,profiles:profiles.rows,matches:matches.rows,savedJobs:saved.rows,applications:applications.rows,limit:50});
 }));
 app.use("/api",(req,res)=>res.status(404).json({error:"API endpoint not found."}));
-app.use((req,res,next)=>{const basename=path.posix.basename(req.path);if(/\.(?:js|json|sql|ya?ml|md|env|lock)$/i.test(req.path)&&!["app.js","admin.js","dashboard.js","cv.js"].includes(basename))return res.status(404).send("Not found");next()});
+app.use((req,res,next)=>{const basename=path.posix.basename(req.path);if(/\.(?:js|json|sql|ya?ml|md|env|lock)$/i.test(req.path)&&!["app.js","admin.js","dashboard.js","cv.js","career.js","learning.js"].includes(basename))return res.status(404).send("Not found");next()});
 app.use(express.static(path.join(__dirname),{index:"index.html",extensions:["html"],dotfiles:"deny",setHeaders(res,p){if(p.endsWith(".html"))res.setHeader("Cache-Control","no-store")}}));
 app.use((err,req,res,next)=>{if(err.type==="entity.too.large")return res.status(413).json({error:"File is too large. Maximum 3 MB."});console.error(err);res.status(500).json({error:"Server error. Please try again."})});
 const port=Number(process.env.PORT)||3000;
