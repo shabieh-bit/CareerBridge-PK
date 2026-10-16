@@ -26,7 +26,7 @@ const dictionary={
  "BIM":["bim","revit"],"Research":["research methodology","scientific research"],
  "Report Writing":["report writing"],"Teaching":["teaching experience","instructional design"]
 };
-const normalized=s=>String(s||"").toLowerCase().replace(/[^a-z0-9+#.\/]+/g," ").trim();
+const normalized=s=>String(s||"").toLowerCase().replace(/\.(?![a-z0-9])/g," ").replace(/[^a-z0-9+#.\/]+/g," ").trim();
 function contains(text,phrase){
  const p=normalized(phrase);
  if(!p)return false;
