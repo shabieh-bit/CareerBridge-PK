@@ -80,6 +80,7 @@ function learningFor(skill){
  const key=Object.keys(freeSources).find(s=>s.toLowerCase()===String(skill).toLowerCase());
  const resources=(key?freeSources[key]:[["Microsoft Learn search","https://learn.microsoft.com/en-us/training/browse/?terms="+encodeURIComponent(skill)]])
   .map(([label,url])=>({label,url,kind:"learning"}));
+ resources.push({label:"Explore recognized certification pathways",url:"https://learn.microsoft.com/en-us/credentials/certifications/",kind:"certification-directory"});
  resources.push({label:"Find tutorial videos on YouTube",url:"https://www.youtube.com/results?search_query="+encodeURIComponent(skill+" beginner tutorial"),kind:"video-search"});
  return {skill,resources,certificateNote:"Some platforms offer paid exams/certificates. Check the provider before enrolling."};
 }
