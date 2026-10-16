@@ -48,6 +48,10 @@ async function init(){try{
  set("dashboard-match-title",m?.job?.title||"No checks yet");set("dashboard-match-detail",m?m.match.matched.length+" of "+m.match.total+" entered skills matched.":"Once you check a role, your latest comparison will appear here.");
  fillRecords("dashboard-saved",saved,"No saved opportunities yet. Save one from your match results.",false);
  fillRecords("dashboard-applications",apps,"No tracked actions yet. Use your action plan to start tracking.",true);
+ try{
+   const {cv}=await request("/cv");
+   set("dashboard-cv-status",cv?"Uploaded: "+cv.file_name:"No CV uploaded yet. You can add one at any time.");
+ }catch{set("dashboard-cv-status","CV status is currently unavailable.")}
  el("admin-dashboard-link").hidden=user.isAdmin!==true;
  el("dashboard-content").hidden=false;set("dashboard-status","");
  }catch(e){if(e.status===401){location.replace("auth.html?next=dashboard.html");return}set("dashboard-status","We couldn't load your dashboard. Please refresh and try again.")}}
