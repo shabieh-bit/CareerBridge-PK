@@ -71,3 +71,14 @@ Student Profile (`/student-profile.html#cv-section`) allows each signed-in stude
 - `DELETE /api/cv`: permanently remove your CV
 
 The backend checks logged-in ownership, accepted file type and size. CV content is **not parsed for matching**. Future production expansion should consider managed object storage, antimalware scanning, backups, and a retention/privacy policy.
+
+## CV-based job discovery (feature branch)
+A second workflow is available at `/career.html` with student-controlled CV text extraction, confirmation before updating profile skills, and source-linked job discovery.
+
+- **My City** and **Anywhere in Pakistan** use Jooble Pakistan's API only when a private `JOOBLE_PK_API_KEY` is configured.
+- **Worldwide Remote** uses the key-free Jobicy API, restricted to worldwide-tagged listings.
+- Provider excerpts are not full job specifications, so any detected skill score is an **indicative overlap only**.
+- Students create saved action plans with official learning resources, tutorial search links, study checkboxes and a *Recheck match* step after profile updates.
+- See [CV matching guide](docs/CV_JOB_MATCHING.md) for complete setup, privacy caveats and release requirements.
+
+The live URL remains on the stable main deployment until this feature is tested and approved.

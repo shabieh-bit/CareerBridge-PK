@@ -1182,3 +1182,38 @@ body { overflow-x: hidden; }
 .dashboard-cv { margin-top:18px;padding:16px;border:1px solid var(--line);border-radius:12px;background:var(--soft); }
 .dashboard-cv strong { display:block;color:var(--navy);margin-bottom:4px; }
 .dashboard-cv p { margin:0 0 8px;color:var(--muted);font-size:.91rem;overflow-wrap:anywhere; }
+
+/* CareerBridge: CV-driven matching and persistent action plans */
+.career-hero {padding-block:68px 52px}
+.career-section {padding-block:45px 85px}
+.career-layout {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px}
+.career-panel,.career-job-card,.career-results{min-width:0;padding:28px;border:1px solid var(--line);border-radius:20px;background:var(--white)}
+.career-panel{box-shadow:0 5px 22px rgba(8,44,91,.04)}
+.career-panel h2,.career-results h2{font-size:clamp(1.8rem,3vw,2.6rem)}
+.career-panel input:not([type=radio]),.career-panel select{display:block;width:100%;padding:12px;border:1px solid #bfcec7;border-radius:10px;font:inherit;margin-bottom:18px}
+.career-panel label{display:block;margin-bottom:7px;font-weight:700;color:var(--navy)}
+.career-fieldset{border:1px solid var(--line);padding:12px 15px;margin:8px 0 16px;border-radius:12px}
+.career-fieldset legend{color:var(--navy);font-weight:800}
+.career-fieldset label{display:flex;align-items:center;gap:9px;font-weight:600;padding:4px 0}
+.career-fieldset input{accent-color:var(--green)}
+.career-actions{display:flex;align-items:center;flex-wrap:wrap;gap:12px;margin-top:22px}
+.career-actions .text-link{margin-right:auto}
+.career-results{margin-top:24px}
+.career-results>p{color:var(--muted)}
+.career-job-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+.career-job-card{background:#fafcfb;display:flex;flex-direction:column;align-items:stretch;gap:6px}
+.career-job-card h3{margin:0 0 10px;overflow-wrap:anywhere}
+.career-job-card h4{color:var(--navy);margin:14px 0 6px}
+.career-job-card p{margin:0 0 8px;color:var(--muted);overflow-wrap:anywhere}
+.career-job-card .career-actions{margin-top:auto;padding-top:14px}
+.career-excerpt{font-size:.93rem;line-height:1.5}
+.career-missing{font-weight:700;color:#9a532c!important}
+.career-learning{padding:12px 15px;border:1px solid var(--line);border-radius:12px;background:white;margin:7px 0}
+.career-learning ul{padding-left:20px;margin:8px 0}
+.career-learning li{margin:7px 0}
+.career-check{display:flex;align-items:center;gap:8px;margin:7px 0;color:var(--ink);font-size:.9rem}
+.career-check input{width:18px;height:18px;accent-color:var(--green)}
+.career-results .dashboard-disclaimer{font-size:.9rem}
+.career-panel .btn:disabled,.career-job-card button:disabled{opacity:.6;cursor:not-allowed}
+@media(max-width:900px){.career-layout,.career-job-grid{grid-template-columns:1fr}}
+@media(max-width:640px){.career-panel,.career-results,.career-job-card{padding:20px}.career-actions .btn{width:100%}}

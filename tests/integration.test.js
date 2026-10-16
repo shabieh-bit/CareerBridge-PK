@@ -13,6 +13,8 @@ test("account, profile, matching, saved job, and session persistence", { skip: !
   for (const stream of [child.stdout,child.stderr]) stream.on("data",d=>{logs+=String(d)});
   const pool = new Pool({ connectionString:url });
   let cookie = "";
+  const unique=Date.now()+"-"+Math.floor(Math.random()*100000);
+  const email="ci-"+unique+"@example.test";
   async function call(endpoint,method="GET",data,customCookie=cookie) {
     const response=await fetch(base+endpoint,{method,headers:{ "Content-Type":"application/json", ...(customCookie?{Cookie:customCookie}:{})},body:data===undefined?undefined:JSON.stringify(data)});
     const json=await response.json();
@@ -26,8 +28,7 @@ test("account, profile, matching, saved job, and session persistence", { skip: !
       await sleep(250);
     }
     assert.ok(live,"Server did not start: "+logs);
-    const unique=Date.now()+"-"+Math.floor(Math.random()*100000);
-    const email="ci-"+unique+"@example.test";
+
     const registered=await call("/auth/register","POST",{name:"Test Student",email,password:"MySecurePassword123!"});
     assert.equal(registered.status,201,JSON.stringify(registered.json));
     assert.equal(registered.json.user.isAdmin,false);
@@ -61,7 +62,7 @@ test("account, profile, matching, saved job, and session persistence", { skip: !
     assert.equal(inaccessible.status,404,"Users cannot save another user's matched job");
   } finally {
     child.kill();
-    await pool.query("DELETE FROM users WHERE email LIKE $1",["ci-%@example.test"]).catch(()=>{});
+    await pool.query("DELETE FROM users WHERE email=$1 OR email=$2",[email,"ci-other-"+unique+"@example.test"]).catch(()=>{});
     await pool.end();
   }
 });

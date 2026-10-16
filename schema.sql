@@ -57,3 +57,21 @@ CREATE TABLE IF NOT EXISTS cv_files (
  file_data BYTEA NOT NULL,
  uploaded_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+-- CV parsing results contain extracted skills and education only, never the full CV text.
+CREATE TABLE IF NOT EXISTS cv_analysis (
+ user_id BIGINT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+ cv_uploaded_at TIMESTAMPTZ NOT NULL,
+ result JSONB NOT NULL,
+ analyzed_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE TABLE IF NOT EXISTS action_plans (
+ id BIGSERIAL PRIMARY KEY,
+ user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+ job JSONB NOT NULL,
+ required_skills JSONB NOT NULL,
+ completed_skills JSONB NOT NULL DEFAULT '[]'::jsonb,
+ created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+ updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS action_plans_by_user ON action_plans(user_id,id DESC);
