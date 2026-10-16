@@ -26,12 +26,14 @@ async function requireUser(req,res,next){
  try{
   const token=cookies(req).cb_session;
   if(!token)return res.status(401).json({error:"Please sign in."});
-  const {rows}=await pool.query("SELECT u.id,u.name,u.email FROM sessions s JOIN users u ON u.id=s.user_id WHERE s.token_hash=$1 AND s.expires_at>NOW()",[tokenHash(token)]);
+  const {rows}=await pool.query("SELECT u.id,u.name,u.email,u.is_admin FROM sessions s JOIN users u ON u.id=s.user_id WHERE s.token_hash=$1 AND s.expires_at>NOW()",[tokenHash(token)]);
   if(!rows.length)return res.status(401).json({error:"Session expired. Sign in again."});
   req.user=rows[0];next();
  }catch(e){next(e)}
 }
-const publicUser=({id,name,email})=>({id,name,email});
+const publicUser=({id,name,email,is_admin})=>({id,name,email,isAdmin:is_admin===true});
+function requireAdmin(req,res,next){if(req.user?.is_admin!==true)return res.status(403).json({error:"Administrator access required."});next();}
+
 async function newSession(req,res,user){
  const token=crypto.randomBytes(32).toString("hex");
  await pool.query("INSERT INTO sessions(user_id,token_hash,expires_at) VALUES($1,$2,NOW()+INTERVAL '7 days')",[user.id,tokenHash(token)]);
@@ -42,7 +44,7 @@ app.post("/api/auth/register",authLimit,handle(async(req,res)=>{
  const name=String(req.body.name||"").trim(),email=String(req.body.email||"").trim().toLowerCase(),password=req.body.password;
  if(!valid(name,2,100)||!/^\S+@\S+\.\S+$/.test(email)||email.length>254||!valid(password,10,128))return res.status(400).json({error:"Enter a name, valid email and password of at least 10 characters."});
  const hash=await bcrypt.hash(password,12);
- try{const {rows}=await pool.query("INSERT INTO users(name,email,password_hash) VALUES($1,$2,$3) RETURNING id,name,email",[name,email,hash]);await newSession(req,res,rows[0]);res.status(201).json({user:publicUser(rows[0])});}
+ try{const {rows}=await pool.query("INSERT INTO users(name,email,password_hash) VALUES($1,$2,$3) RETURNING id,name,email,is_admin",[name,email,hash]);await newSession(req,res,rows[0]);res.status(201).json({user:publicUser(rows[0])});}
  catch(e){if(e.code==="23505")return res.status(409).json({error:"Email already registered."});throw e}
 }));
 app.post("/api/auth/login",authLimit,handle(async(req,res)=>{
@@ -110,6 +112,18 @@ app.post("/api/applications",requireUser,handle(async(req,res)=>{
  const job=found.rows[0].job;
  const {rows}=await pool.query("INSERT INTO applications(user_id,job_link,job,status) VALUES($1,$2,$3,'Application tracked') ON CONFLICT(user_id,job_link) DO UPDATE SET job=EXCLUDED.job,status='Application tracked',updated_at=NOW() RETURNING id,job,status,updated_at",[req.user.id,job.link,job]);
  res.status(201).json({application:rows[0]});
+}));
+app.get("/api/admin/overview",requireUser,requireAdmin,handle(async(req,res)=>{
+ const [counts,users,profiles,matches,saved,applications]=await Promise.all([
+ pool.query("SELECT (SELECT count(*) FROM users)::int AS users,(SELECT count(*) FROM profiles)::int AS profiles,(SELECT count(*) FROM matches)::int AS matches,(SELECT count(*) FROM saved_jobs)::int AS saved_jobs,(SELECT count(*) FROM applications)::int AS applications"),
+ pool.query("SELECT id,name,email,created_at FROM users ORDER BY id DESC LIMIT 50"),
+ pool.query("SELECT p.user_id,u.name,p.degree,p.semester,p.city,p.interest,p.skills,p.updated_at FROM profiles p JOIN users u ON p.user_id=u.id ORDER BY p.updated_at DESC LIMIT 50"),
+ pool.query("SELECT m.id,u.name,m.job,m.match,m.created_at FROM matches m JOIN users u ON m.user_id=u.id ORDER BY m.id DESC LIMIT 50"),
+ pool.query("SELECT s.id,u.name,s.job,s.created_at FROM saved_jobs s JOIN users u ON s.user_id=u.id ORDER BY s.id DESC LIMIT 50"),
+ pool.query("SELECT a.id,u.name,a.job,a.status,a.updated_at FROM applications a JOIN users u ON a.user_id=u.id ORDER BY a.updated_at DESC LIMIT 50")
+ ]);
+ res.set("Cache-Control","no-store");
+ res.json({counts:counts.rows[0],users:users.rows,profiles:profiles.rows,matches:matches.rows,savedJobs:saved.rows,applications:applications.rows,limit:50});
 }));
 app.use("/api",(req,res)=>res.status(404).json({error:"API endpoint not found."}));
 app.use((req,res,next)=>{const basename=path.posix.basename(req.path);if(/\.(?:js|json|sql|ya?ml|md|env|lock)$/i.test(req.path)&&basename!=="app.js")return res.status(404).send("Not found");next()});
