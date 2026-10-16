@@ -1,0 +1,21 @@
+{
+  "name": "careerbridge-pk",
+  "version": "1.0.0",
+  "private": true,
+  "description": "CareerBridge PK full-stack student opportunity matching",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "test": "node --test tests/*.test.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "express": "^4.21.2",
+    "express-rate-limit": "^7.5.0",
+    "helmet": "^8.0.0",
+    "pg": "^8.13.1"
+  }
+}
