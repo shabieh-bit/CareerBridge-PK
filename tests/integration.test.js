@@ -61,7 +61,7 @@ test("account, profile, matching, saved job, and session persistence", { skip: !
     assert.equal(inaccessible.status,404,"Users cannot save another user's matched job");
   } finally {
     child.kill();
-    await pool.query("DELETE FROM users WHERE email LIKE $1",["ci-%@example.test"]).catch(()=>{});
+    await pool.query("DELETE FROM users WHERE email=$1 OR email=$2",[email,"ci-other-"+unique+"@example.test"]).catch(()=>{});
     await pool.end();
   }
 });
