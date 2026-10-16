@@ -129,6 +129,60 @@ app.post("/api/applications",requireUser,handle(async(req,res)=>{
  const {rows}=await pool.query("INSERT INTO applications(user_id,job_link,job,status) VALUES($1,$2,$3,'Application tracked') ON CONFLICT(user_id,job_link) DO UPDATE SET job=EXCLUDED.job,status='Application tracked',updated_at=NOW() RETURNING id,job,status,updated_at",[req.user.id,job.link,job]);
  res.status(201).json({application:rows[0]});
 }));
+// CVs belong to the signed-in user only. No public file URL is exposed.
+const CV_LIMIT=3*1024*1024;
+const cvMime={".pdf":"application/pdf",".docx":"application/vnd.openxmlformats-officedocument.wordprocessingml.document"};
+function cvName(header){
+ if(typeof header!=="string"||header.length>500)return null;
+ let name;try{name=decodeURIComponent(header)}catch{return null}
+ if(!name||name.length>100||name.includes("/")||name.includes("\\"))return null;
+ if(!/^[a-zA-Z0-9 _().-]+$/.test(name))return null;
+ return name;
+}
+function cvValid(data,extension){
+ if(!Buffer.isBuffer(data)||data.length<15||data.length>CV_LIMIT)return false;
+ if(extension===".pdf")return data.subarray(0,5).toString("ascii")==="%PDF-"&&data.subarray(-1024).includes(Buffer.from("%%EOF"));
+ if(extension===".docx")return data.subarray(0,4).equals(Buffer.from([0x50,0x4b,0x03,0x04]))
+  &&data.includes(Buffer.from("[Content_Types].xml"))&&data.includes(Buffer.from("word/document.xml"))
+  &&!data.includes(Buffer.from("vbaProject.bin"));
+ return false;
+}
+function cvOrigin(req,res,next){
+ const origin=req.get("origin");
+ if(origin&&origin!==req.protocol+"://"+req.get("host"))return res.status(403).json({error:"Request origin not allowed."});
+ next();
+}
+app.get("/api/cv",requireUser,handle(async(req,res)=>{
+ const {rows}=await pool.query("SELECT file_name,size_bytes,uploaded_at FROM cv_files WHERE user_id=$1",[req.user.id]);
+ res.set("Cache-Control","no-store").json({cv:rows[0]||null});
+}));
+app.put("/api/cv",requireUser,cvOrigin,express.raw({type:"application/octet-stream",limit:CV_LIMIT}),handle(async(req,res)=>{
+ const name=cvName(req.get("x-file-name"));
+ const ext=name?path.extname(name).toLowerCase():"";
+ if(!name||!cvMime[ext])return res.status(400).json({error:"Upload a PDF or DOCX file with a simple filename."});
+ if(!cvValid(req.body,ext))return res.status(400).json({error:"Invalid PDF/DOCX content or file larger than 3 MB."});
+ const {rows}=await pool.query(`INSERT INTO cv_files(user_id,file_name,mime_type,size_bytes,file_data)
+ VALUES($1,$2,$3,$4,$5)
+ ON CONFLICT(user_id) DO UPDATE SET file_name=EXCLUDED.file_name,mime_type=EXCLUDED.mime_type,size_bytes=EXCLUDED.size_bytes,file_data=EXCLUDED.file_data,uploaded_at=NOW()
+ RETURNING file_name,size_bytes,uploaded_at`,[req.user.id,name,cvMime[ext],req.body.length,req.body]);
+ res.set("Cache-Control","no-store").json({cv:rows[0]});
+}));
+app.get("/api/cv/download",requireUser,handle(async(req,res)=>{
+ const {rows}=await pool.query("SELECT file_name,mime_type,file_data FROM cv_files WHERE user_id=$1",[req.user.id]);
+ if(!rows.length)return res.status(404).json({error:"You have not uploaded a CV."});
+ const cv=rows[0];
+ const safe=cv.file_name.replace(/[^a-zA-Z0-9 _().-]/g,"_").replace(/["\\]/g,"_");
+ res.set("Content-Type",cv.mime_type);
+ res.set("Content-Disposition",'attachment; filename="'+safe+'"');
+ res.set("Cache-Control","private, no-store");
+ res.set("X-Content-Type-Options","nosniff");
+ res.send(cv.file_data);
+}));
+app.delete("/api/cv",requireUser,cvOrigin,handle(async(req,res)=>{
+ const {rows}=await pool.query("DELETE FROM cv_files WHERE user_id=$1 RETURNING user_id",[req.user.id]);
+ if(!rows.length)return res.status(404).json({error:"No CV found for this account."});
+ res.set("Cache-Control","no-store").json({deleted:true});
+}));
 app.get("/api/admin/overview",requireUser,requireAdmin,handle(async(req,res)=>{
  const [counts,users,profiles,matches,saved,applications]=await Promise.all([
  pool.query("SELECT (SELECT count(*) FROM users)::int AS users,(SELECT count(*) FROM profiles)::int AS profiles,(SELECT count(*) FROM matches)::int AS matches,(SELECT count(*) FROM saved_jobs)::int AS saved_jobs,(SELECT count(*) FROM applications)::int AS applications"),
@@ -142,9 +196,9 @@ app.get("/api/admin/overview",requireUser,requireAdmin,handle(async(req,res)=>{
  res.json({counts:counts.rows[0],users:users.rows,profiles:profiles.rows,matches:matches.rows,savedJobs:saved.rows,applications:applications.rows,limit:50});
 }));
 app.use("/api",(req,res)=>res.status(404).json({error:"API endpoint not found."}));
-app.use((req,res,next)=>{const basename=path.posix.basename(req.path);if(/\.(?:js|json|sql|ya?ml|md|env|lock)$/i.test(req.path)&&!["app.js","admin.js","dashboard.js"].includes(basename))return res.status(404).send("Not found");next()});
+app.use((req,res,next)=>{const basename=path.posix.basename(req.path);if(/\.(?:js|json|sql|ya?ml|md|env|lock)$/i.test(req.path)&&!["app.js","admin.js","dashboard.js","cv.js"].includes(basename))return res.status(404).send("Not found");next()});
 app.use(express.static(path.join(__dirname),{index:"index.html",extensions:["html"],dotfiles:"deny",setHeaders(res,p){if(p.endsWith(".html"))res.setHeader("Cache-Control","no-store")}}));
-app.use((err,req,res,next)=>{console.error(err);res.status(500).json({error:"Server error. Please try again."})});
+app.use((err,req,res,next)=>{if(err.type==="entity.too.large")return res.status(413).json({error:"File is too large. Maximum 3 MB."});console.error(err);res.status(500).json({error:"Server error. Please try again."})});
 const port=Number(process.env.PORT)||3000;
 if(require.main===module){if(!process.env.DATABASE_URL){console.error("DATABASE_URL is required");process.exit(1)}app.listen(port,"0.0.0.0",()=>console.log("CareerBridge running on "+port))}
 module.exports={app,computeMatch};

@@ -47,3 +47,13 @@ CREATE TABLE IF NOT EXISTS applications (
  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
  UNIQUE(user_id,job_link)
 );
+
+-- Each student may upload one private CV, independent of their saved profile.
+CREATE TABLE IF NOT EXISTS cv_files (
+ user_id BIGINT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+ file_name TEXT NOT NULL,
+ mime_type TEXT NOT NULL,
+ size_bytes INTEGER NOT NULL CHECK (size_bytes > 0 AND size_bytes <= 3145728),
+ file_data BYTEA NOT NULL,
+ uploaded_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);

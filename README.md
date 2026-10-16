@@ -34,7 +34,7 @@ CareerBridge PK helps students compare their skills with a job or internship, un
 5. Save a job, track an application manually and revisit /dashboard.html.
 6. Log out and sign back in to prove cloud persistence.
 
-**Important:** This matching tool uses skills entered manually by the student, not an automatically parsed job post. The eligibility percentage is a skill-overlap score, not a formal determination of eligibility. “Apply and track” records your intent in CareerBridge; it does **not** submit to an employer. CV files are not uploaded or stored.
+**Important:** This matching tool uses skills entered manually by the student, not an automatically parsed job post. The eligibility percentage is a skill-overlap score, not a formal determination of eligibility. “Apply and track” records your intent in CareerBridge; it does **not** submit to an employer. CVs can optionally be uploaded later as private PDF or DOCX documents (up to 3 MB); no CV analysis is performed.
 
 ## API
 - POST /api/auth/register, /api/auth/login, /api/auth/logout; GET /api/auth/me
@@ -61,3 +61,13 @@ UPDATE users SET is_admin = TRUE WHERE email = 'confirmed-owner@example.com';
 ```
 
 Replace the example email only after checking the intended account. Sign out and back in if necessary. `admin.js` is a public asset; authorization happens in the protected server API, not only in JavaScript.
+
+## Optional CV documents
+Student Profile (`/student-profile.html#cv-section`) allows each signed-in student to upload a PDF or DOCX CV (max 3 MB), or skip it and add it later. The Student Dashboard includes an **Add / Manage CV** link. File bytes are stored in the private `cv_files` PostgreSQL table, linked to the student's user ID; they are not saved on Render's temporary filesystem.
+
+- `GET /api/cv`: view only your own CV metadata (not the bytes)
+- `PUT /api/cv`: upload or replace your CV using a binary request
+- `GET /api/cv/download`: authenticated attachment download
+- `DELETE /api/cv`: permanently remove your CV
+
+The backend checks logged-in ownership, accepted file type and size. CV content is **not parsed for matching**. Future production expansion should consider managed object storage, antimalware scanning, backups, and a retention/privacy policy.
